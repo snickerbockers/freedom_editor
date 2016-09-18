@@ -25,6 +25,16 @@ def write_frame(frame_no, lvl_prefix):
         r2.cmd("s+ 1")
         r2.cmd("wv4 %d" % obj["pos_y"])
 
+def write_all_frames(source_dir, engine_path):
+    global r2
+
+    r2 = r2pipe.open(engine_path)
+    r2.cmd("oo+")
+
+    for frame_no in range(1, 88):
+        lvl_path = os.path.join(source_dir, "%d.lvl" % frame_no)
+        write_frame(frame_no, source_dir)
+
 if __name__ == "__main__":
     engine_path = "Chowdren"
     out_dir = "."
@@ -40,9 +50,4 @@ if __name__ == "__main__":
         print usage_string
         exit(1)
 
-    r2 = r2pipe.open(engine_path)
-    r2.cmd("oo+")
-
-    for frame_no in range(1, 88):
-        lvl_path = os.path.join(out_dir, "%d.lvl" % frame_no)
-        write_frame(frame_no, out_dir)
+    write_all_frames(source_dir = out_dir, engine_path = engine_path)
