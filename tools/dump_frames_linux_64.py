@@ -3,6 +3,9 @@
 import r2pipe
 import json
 import re
+import os
+import sys
+from getopt import getopt, GetoptError
 
 ################################################################################
 #
@@ -16,8 +19,6 @@ import re
 # so <count>         - seek forward <count> instructions
 #
 ################################################################################
-
-r2 = r2pipe.open("Chowdren")
 
 mov_edi_re = re.compile("mov edi, (0x[0-9a-fA-F]+|[0-9]+)")
 mov_esi_re = re.compile("mov esi, (0x[0-9a-fA-F]+|[0-9]+)")
@@ -177,9 +178,27 @@ def parse_frame(frame_no):
             "objects" : objs}
 
 if __name__ == "__main__":
+    engine_path = "Chowdren"
+    out_dir = "."
+
+    try:
+        opt_val, params = getopt(sys.argv[1:], "i:o:", ["in=", "out="])
+        for option, value in opt_val:
+            if option == "-i" or option == "--in":
+                engine_path = value
+            elif option == "-o" or option == "--out":
+                out_dir = value
+    except GetoptError:
+        print usage_string
+        exit(1)
+
+    r2 = r2pipe.open(engine_path)
+
+    os.mkdir(out_dir)
+
     for frame_no in range(1, 88):
-        lvl_path = "%d.lvl" % frame_no
-        print "dumping %s..." % lvl_path
+        lvl_path = os.path.join(out_dir, "%d.lvl" % frame_no)
+        print "dumping frame %d to %s..." % (frame_no, lvl_path)
 
         frame = parse_frame(frame_no)
         json.dump(obj=frame, fp = open(lvl_path, "w"), indent=4)
