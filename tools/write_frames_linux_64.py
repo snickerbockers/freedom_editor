@@ -8,6 +8,9 @@ from getopt import getopt, GetoptError
 
 r2 = None
 
+usage_string = "%s -i|--in <path-to-Chowdren> -o|--out <path-to-lvl-files>" % \
+               sys.argv[0]
+
 def write_frame(frame_no, lvl_prefix):
     lvl_path = os.path.join(lvl_prefix, "%d.lvl" % frame_no)
     print "writing frame %d from %s..." % (frame_no, lvl_path)

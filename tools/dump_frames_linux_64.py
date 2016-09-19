@@ -20,6 +20,9 @@ from getopt import getopt, GetoptError
 #
 ################################################################################
 
+usage_string = "%s -i|--in <path-to-Chowdren> -o|--out <path-to-lvl-files>" % \
+               sys.argv[0]
+
 mov_edi_re = re.compile("mov edi, (0x[0-9a-fA-F]+|[0-9]+)")
 mov_esi_re = re.compile("mov esi, (0x[0-9a-fA-F]+|[0-9]+)")
 

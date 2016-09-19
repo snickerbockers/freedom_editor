@@ -11,7 +11,8 @@ import write_frames_linux_64
 usage_string = """\
 %s create -i|--install-dir <path to game installation> <path to project>
 %s launch <path to project>
-""" % (sys.argv[0], sys.argv[0])
+%s build <path to project>
+""" % (sys.argv[0], sys.argv[0], sys.argv[0])
 
 def create_project(project_name, project_path, game_path):
     """
