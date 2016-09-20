@@ -6,5 +6,66 @@ The Freedom Editor is (err...will be) a complete modding toolkit for the 2014
 game "Freedom Planet".  This includes the ability to edit levels, and replace
 art assets.
 
+Currently Freedom Editor only supports the 64-bit GNU/Linux version of the
+game, and it has only been tested on the GoG release (although the Steam
+release will probably work as well).  Windows support will come eventually.
+
+================================================================================
+== PREREQUISITES:
+================================================================================
+
+* Python 2.7
+* radare2
+* r2pipe
+
+================================================================================
+== INSTRUCTIONS:
+================================================================================
+
+Freedom Editor is built around the concept of projects, which are directories
+containing a copy of your game installation and all of the level and art assets
+in a dumped form.  To create a new project, the following command should be run:
+
+tools/fp_project.py create -i <path to game installation> <path to project>
+
+<path to project> is where you want to save the project.
+<path to game installation> should point to the directory where the game is
+                  installed.  Its contents should look something like this:
+
+.mojosetup/                  game/                        start.sh                     uninstall-Freedom Planet.sh
+docs/                        gameinfo                     support/
+
+This script has a lot of data to sift through, so it will take several minutes
+to complete.
+
+At this point, your project directory will contain the following directories:
+assets - dumped version of Assets.dat
+levels - dumped version of the game levels
+bkup   - backup copies of bin64/Chowdren and Assets.dat for generating patches
+         against
+inst   - copy of your game installation
+
+At this point you can edit the pos_x and pos_y attributes in the level files to
+change the positions of in-game objects.  Changing the obj_class field (which
+controls what type of object is spawned) might also work but I haven't gotten
+around to testing it.  The other fields are dangerous and should not be edited.
+
+You can also edit any of the files in the assets/ directory, but you should be
+wary of type_sizes.txt and anything ending in *_meta.txt because I don't know
+what the data in those files is meant to represent.
+
+To compile your mod, run the following command:
+tools/fp_project.py build <path to project>
+
+This will update the copies of Assets.dat and bin64/Chowdren in your inst/
+subdirectory.
+
+The modded game can then be launched by running:
+tools/fp_project.py launch <path to project>
+
+================================================================================
+== OBLIGATORY:
+================================================================================
+
 This is a fan project.  Neither the project nor its contributors have any
 affiliation with or official connection to Freedom Planet or Galaxy Trail.
