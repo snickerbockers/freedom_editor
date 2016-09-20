@@ -106,8 +106,14 @@ def cmd_build():
 
     source_dir = os.path.join(params[1], "levels")
     engine_path = os.path.join(params[1], "inst", "bin64", "Chowdren")
+
+    print "rebuilding levels..."
     write_frames_linux_64.write_all_frames(source_dir = source_dir,
                                            engine_path = engine_path)
+    print "rebuilding Assets.dat..."
+    fpassets.write_assets_file(os.path.join(params[1], "inst", "Assets.dat"),
+                               os.path.join(params[1], "assets"))
+
 
 if __name__ == "__main__":
     cmd = sys.argv[1]
