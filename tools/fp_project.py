@@ -92,7 +92,7 @@ def cmd_create():
 
     create_project(project_path = params[1],
                    project_name = os.path.basename(params[1]),
-                   game_path = "/mnt/big/jay/gog_games/Freedom Planet")
+                   game_path = install_dir)
 
 def cmd_launch():
     params = sys.argv[1:]
