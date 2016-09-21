@@ -79,7 +79,6 @@ def cmd_create():
     try:
         opt_val, params = gnu_getopt(sys.argv[1:], "i:", ["install-dir="])
         for option, value in opt_val:
-            print option
             if option == "-i" or option == "--install-dir":
                 install_dir = value
     except GetoptError:

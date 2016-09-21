@@ -17,6 +17,7 @@ release will probably work as well).  Windows support will come eventually.
 * Python 2.7
 * radare2
 * r2pipe
+* Pillow
 
 ================================================================================
 == INSTRUCTIONS:
