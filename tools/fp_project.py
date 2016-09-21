@@ -93,12 +93,29 @@ def cmd_create():
                    project_name = os.path.basename(params[1]),
                    game_path = install_dir)
 
+def launch_project(project_path):
+    game_dir = os.path.join(project_path, "inst")
+    os.chdir(game_dir)
+    subprocess.call(os.path.join("bin64", "Chowdren"))
+
 def cmd_launch():
     params = sys.argv[1:]
 
-    game_dir = os.path.join(params[1], "inst")
-    os.chdir(game_dir)
-    subprocess.call(os.path.join("bin64", "Chowdren"))
+    launch_project(project_path = params[1])
+
+def build_project_engine(project_path):
+    source_dir = os.path.join(project_path, "levels")
+    engine_path = os.path.join(project_path, "inst", "bin64", "Chowdren")
+
+    print "rebuilding levels..."
+    write_frames_linux_64.write_all_frames(source_dir = source_dir,
+                                           engine_path = engine_path)
+
+def build_project_assets(project_path):
+    print "rebuilding Assets.dat..."
+    assets_file = os.path.join(project_path, "inst", "Assets.dat")
+    assets_dir = os.path.join(project_path, "assets")
+    fpassets.write_assets_file(assets_file, assets_dir)
 
 def cmd_build():
     build_assets_only = False
@@ -116,22 +133,15 @@ def cmd_build():
         print "%s" % usage_string
         exit(1)
 
-    source_dir = os.path.join(params[1], "levels")
-    engine_path = os.path.join(params[1], "inst", "bin64", "Chowdren")
-
     if build_engine_only and build_assets_only:
         raise Exception("You can't specify both --assets-only " + \
                         "AND --engine-only")
 
     if not build_assets_only:
-        print "rebuilding levels..."
-        write_frames_linux_64.write_all_frames(source_dir = source_dir,
-                                               engine_path = engine_path)
+        build_project_engine(params[1])
+
     if not build_engine_only:
-        print "rebuilding Assets.dat..."
-        assets_file = os.path.join(params[1], "inst", "Assets.dat")
-        assets_dir = os.path.join(params[1], "assets")
-        fpassets.write_assets_file(assets_file, assets_dir)
+        build_project_assets(params[1])
 
 if __name__ == "__main__":
     cmd = sys.argv[1]
