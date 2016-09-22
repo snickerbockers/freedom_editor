@@ -93,10 +93,15 @@ def cmd_create():
                    project_name = os.path.basename(params[1]),
                    game_path = install_dir)
 
-def launch_project(project_path):
+def launch_project(project_path, block=True):
     game_dir = os.path.join(project_path, "inst")
     os.chdir(game_dir)
-    subprocess.call(os.path.join("bin64", "Chowdren"))
+
+    cmd = os.path.join("bin64", "Chowdren")
+    if block:
+        subprocess.call(cmd)
+    else:
+        subprocess.Popen(cmd)
 
 def cmd_launch():
     params = sys.argv[1:]
