@@ -20,7 +20,13 @@ def create_project(project_name, project_path, game_path):
     a copy of the game and the dumped assets and levels.
     """
 
-    os.mkdir(project_path)
+    # allow users to provide a path to an empty directory because the dialog
+    # used by the editor will create the directory
+    if os.path.exists(project_path) and len(os.listdir(project_path)) != 0:
+        raise Exception("\"%s\" exists and is not empty" % project_path)
+
+    if not os.path.exists(project_path):
+        os.mkdir(project_path)
 
     print "Copying game installation..."
 
