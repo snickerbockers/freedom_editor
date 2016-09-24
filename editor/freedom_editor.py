@@ -74,7 +74,17 @@ class EditorCallbacks:
         textview = builder.get_object("progress_dialog_textview")
         if condition == GLib.IO_IN:
             buf = textview.get_buffer()
+
+            # XXX: since this isn't quite atomic, a compulsive clicker might be
+            # able to fuck this up (but only a little since it prints one char
+            # at a time)
+            end_iter = buf.get_end_iter()
+            buf.place_cursor(end_iter)
             buf.insert_at_cursor(fd.read(1))
+
+            # FIXME: This is supposed to make it scroll to the end, but it doesn't do that
+            end_iter = buf.get_end_iter()
+            textview.scroll_to_iter(end_iter, 0.0, False, 0, 1.0)
             return True
         return False
 
