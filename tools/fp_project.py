@@ -29,6 +29,7 @@ def create_project(project_name, project_path, game_path):
         os.mkdir(project_path)
 
     print "Copying game installation..."
+    sys.stdout.flush()
 
     # the inst directory contains a copy of your installation of the game
     inst_path = os.path.join(project_path, "inst")
@@ -73,10 +74,12 @@ def create_project(project_name, project_path, game_path):
 
     # next dump the assets
     print "Dumping Assets..."
+    sys.stdout.flush()
     fpassets.extract_all_assets(path_to_inst_assets, raw_assets_dir)
 
     # next dump the level data
     print "Dumping level data..."
+    sys.stdout.flush()
     dump_frames_linux_64.dump_all_levels(path_to_inst_chowdren, raw_level_dir)
 
 def cmd_create():
@@ -119,11 +122,13 @@ def build_project_engine(project_path):
     engine_path = os.path.join(project_path, "inst", "bin64", "Chowdren")
 
     print "rebuilding levels..."
+    sys.stdout.flush()
     write_frames_linux_64.write_all_frames(source_dir = source_dir,
                                            engine_path = engine_path)
 
 def build_project_assets(project_path):
     print "rebuilding Assets.dat..."
+    sys.stdout.flush()
     assets_file = os.path.join(project_path, "inst", "Assets.dat")
     assets_dir = os.path.join(project_path, "assets")
     fpassets.write_assets_file(assets_file, assets_dir)

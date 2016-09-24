@@ -189,6 +189,7 @@ def dump_all_levels(engine_path, out_dir):
     for frame_no in range(1, 88):
         lvl_path = os.path.join(out_dir, "%d.lvl" % frame_no)
         print "dumping frame %d to %s..." % (frame_no, lvl_path)
+        sys.stdout.flush()
 
         frame = parse_frame(frame_no)
         json.dump(obj=frame, fp = open(lvl_path, "w"), indent=4)
