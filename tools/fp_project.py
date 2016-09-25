@@ -7,12 +7,14 @@ import subprocess
 import fpassets
 import dump_frames_linux_64
 import write_frames_linux_64
+import fp_render
 
 usage_string = """\
 %s create -i|--install-dir <path to game installation> <path to project>
 %s launch <path to project>
 %s build [--assets-only|--engine-only] <path to project>
-""" % (sys.argv[0], sys.argv[0], sys.argv[0])
+%s render <path to project>
+""" % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
 
 def create_project(project_name, project_path, game_path, n_jobs = 1):
     """
@@ -166,6 +168,19 @@ def cmd_build():
     if not build_engine_only:
         build_project_assets(params[1])
 
+def cmd_render():
+    params = sys.argv[1:]
+
+    img_dir = os.path.join(params[1], "renders")
+    if not os.path.exists(img_dir):
+        os.mkdir(img_dir)
+
+    for frame_no in range(1, 88):
+        img_path = os.path.join(img_dir, "frame_%d.png" % frame_no)
+        fp_render.render_frame_to_png(proj_path = params[1],
+                                      frame_no = frame_no,
+                                      img_path = img_path)
+
 if __name__ == "__main__":
     cmd = sys.argv[1]
 
@@ -175,6 +190,8 @@ if __name__ == "__main__":
         cmd_launch()
     elif cmd == "build":
         cmd_build()
+    elif cmd == "render":
+        cmd_render()
     else:
         print "\"%s\" is not a recognized command" % cmd
         print "%s" % usage_string
