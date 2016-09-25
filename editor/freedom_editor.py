@@ -6,8 +6,10 @@ import subprocess
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk, GLib, GObject
 import cairo
+
+import frame
 
 sys.path.append("../tools/")
 import fp_project
@@ -15,20 +17,41 @@ import fp_project
 project_path = None
 
 class EditorCallbacks:
+    def __init__(self):
+        self.frame = None
+
+        self.level_display_trans_x = 0.0
+        self.level_display_trans_y = 0.0
+
     def kill_me_now(self, *args):
         Gtk.main_quit(*args)
     def on_draw(self, widget, cr):
-        cr.set_source_rgb(255, 0, 0)
-        cr.set_line_width(0.5)
+        cr.translate(self.level_display_trans_x, self.level_display_trans_y)
+        if self.frame is not None:
+            self.frame.draw(cr)
+            cr.paint()
 
-        # draw a red X
-        cr.move_to(0, 0)
-        cr.line_to(640, 480)
-        cr.move_to(0, 480)
-        cr.line_to(640, 0)
+    def on_level_display_click(self, widget, event):
+        """
+        called when the user clicks on the level_display drawing area
+        """
+        self.cursor_x_pos = event.x
+        self.cursor_y_pos = event.y
 
-        cr.stroke()
+    def on_level_display_drag(self, widget, event):
+        """
+        called when the user drags the level_display drawing area
+        """
+        rel_x = event.x - self.cursor_x_pos
+        rel_y = event.y - self.cursor_y_pos
 
+        self.cursor_x_pos = event.x
+        self.cursor_y_pos = event.y
+
+        self.level_display_trans_x += rel_x
+        self.level_display_trans_y += rel_y
+
+        widget.queue_draw()
 
     def on_project_new(self, *args):
         new_project_dialog = builder.get_object("new_project_dialog")
@@ -141,11 +164,36 @@ class EditorCallbacks:
         project_path = dialog.get_filename()
         dialog.destroy()
 
+        self.frame = frame.FpFrame(project_path, 21)
+
     def on_project_launch(self, *args):
         if project_path is None:
             return
 
         fp_project.launch_project(project_path, False)
+
+    def on_project_open_frame(self, *args):
+        if project_path is None:
+            return
+        choose_frame_dialog = builder.get_object("choose_frame_dialog")
+        choose_frame_dialog_liststore = builder.get_object("choose_frame_dialog_liststore")
+        treeview = builder.get_object("choose_frame_dialog_treeview")
+
+        for lvl_file in os.listdir(os.path.join(project_path, "levels")):
+            new_obj = choose_frame_dialog_liststore.append()
+            choose_frame_dialog_liststore.set_value(new_obj, 0, lvl_file)
+
+        choose_frame_dialog.set_transient_for(main_window)
+        choose_frame_dialog.show_all()
+
+        if choose_frame_dialog.run() == 1:
+            # user clicked Ok
+            treemodel, treeiter = treeview.get_selection().get_selected()
+            selected_frame = treemodel.get(treeiter, 0)[0]
+            selected_frame = int(selected_frame[:selected_frame.find('.')])
+
+            self.frame = frame.FpFrame(project_path, selected_frame)
+        choose_frame_dialog.destroy()
 
 builder = Gtk.Builder()
 builder.add_from_file("freedom_editor_gui.glade")
