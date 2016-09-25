@@ -14,7 +14,7 @@ usage_string = """\
 %s build [--assets-only|--engine-only] <path to project>
 """ % (sys.argv[0], sys.argv[0], sys.argv[0])
 
-def create_project(project_name, project_path, game_path):
+def create_project(project_name, project_path, game_path, n_jobs = 1):
     """
     creates a project which is a hierarchy of directories including
     a copy of the game and the dumped assets and levels.
@@ -72,7 +72,10 @@ def create_project(project_name, project_path, game_path):
     shutil.copy2(path_to_inst_chowdren, os.path.join(bkup_dir, "Chowdren"))
     shutil.copy2(path_to_inst_assets, os.path.join(bkup_dir, "Assets.dat"))
 
-    # next dump the assets
+    # next dump the assets.  Ideally this would happen in another thread
+    # parallel to the dump_all_levels call, but since multithreading has
+    # proven itself to be counterproductive in this instance it doesn't
+    # really matter.
     print "Dumping Assets..."
     sys.stdout.flush()
     fpassets.extract_all_assets(path_to_inst_assets, raw_assets_dir)
@@ -80,16 +83,20 @@ def create_project(project_name, project_path, game_path):
     # next dump the level data
     print "Dumping level data..."
     sys.stdout.flush()
-    dump_frames_linux_64.dump_all_levels(path_to_inst_chowdren, raw_level_dir)
+    dump_frames_linux_64.dump_all_levels(path_to_inst_chowdren, raw_level_dir,
+                                         n_jobs = n_jobs)
 
 def cmd_create():
     install_dir = None
+    n_jobs = 1
 
     try:
-        opt_val, params = gnu_getopt(sys.argv[1:], "i:", ["install-dir="])
+        opt_val, params = gnu_getopt(sys.argv[1:], "i:j:", ["install-dir=", "jobs="])
         for option, value in opt_val:
             if option == "-i" or option == "--install-dir":
                 install_dir = value
+            elif option == "-j" or option == "--jobs":
+                n_jobs = int(value)
     except GetoptError:
         print "%s" % usage_string
         exit(1)
@@ -100,7 +107,7 @@ def cmd_create():
 
     create_project(project_path = params[1],
                    project_name = os.path.basename(params[1]),
-                   game_path = install_dir)
+                   game_path = install_dir, n_jobs = n_jobs)
 
 def launch_project(project_path, block=True):
     game_dir = os.path.join(project_path, "inst")

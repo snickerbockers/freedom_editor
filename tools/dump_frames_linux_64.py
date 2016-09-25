@@ -5,6 +5,7 @@ import json
 import re
 import os
 import sys
+import threading
 from getopt import getopt, GetoptError
 
 ################################################################################
@@ -46,7 +47,7 @@ class FpObjClass:
                                        self.vaddr,
                                        self.paddr)
 
-def list_object_classes():
+def list_object_classes(r2):
     """
     iterate throught the elf symbols and come up with a map
     of all object classes and the addresses and names of the functions
@@ -73,7 +74,7 @@ def list_object_classes():
         obj_classes[class_name] = obj_class
     return obj_classes
 
-def find_first_image(obj_class):
+def find_first_image(r2, obj_class):
     """
     seeks to the create function and returns the image id sent to
     the first get_internal_image call.  This will return None if
@@ -104,7 +105,7 @@ def find_first_image(obj_class):
         r2.cmd("so 1")
     return None
 
-def parse_frame(frame_no):
+def parse_frame(r2, frame_no):
     """
     seek to the given frame and return a list of all the objects it
     instantiates.  Eventually this will get the coordinates, too.
@@ -127,7 +128,7 @@ def parse_frame(frame_no):
     last_y_val_addr = None
 
     objs = []
-    obj_classes = list_object_classes()
+    obj_classes = list_object_classes(r2)
 
     while int(r2.cmd("s"), 16) < end_address:
         inst = r2.cmd("pi 1")
@@ -171,7 +172,7 @@ def parse_frame(frame_no):
         r2.cmd("so 1")
 
     for idx, obj in enumerate(objs):
-        img_id = find_first_image(obj_classes[obj['obj_class']])
+        img_id = find_first_image(r2, obj_classes[obj['obj_class']])
         if img_id is not None:
             objs[idx]['image'] = img_id;
 
@@ -180,34 +181,50 @@ def parse_frame(frame_no):
             "frame_no" : frame_no,
             "objects" : objs}
 
-def dump_all_levels(engine_path, out_dir):
-    global r2
-    os.mkdir(out_dir)
-
+def do_dump_levels(engine_path, out_dir, n_jobs = 1, start_idx = 1):
     r2 = r2pipe.open(engine_path)
 
-    for frame_no in range(1, 88):
+    for frame_no in range(start_idx, 88, n_jobs):
         lvl_path = os.path.join(out_dir, "%d.lvl" % frame_no)
         print "dumping frame %d to %s..." % (frame_no, lvl_path)
         sys.stdout.flush()
 
-        frame = parse_frame(frame_no)
+        frame = parse_frame(r2, frame_no)
         json.dump(obj=frame, fp = open(lvl_path, "w"), indent=4)
     r2.quit()
+
+def dump_all_levels(engine_path, out_dir, n_jobs = 1):
+    """
+    launch a bunch of threads that all call do_dump_levels
+    """
+    os.mkdir(out_dir)
+
+    thread_list = []
+    for i in range(n_jobs):
+        t = threading.Thread(target = do_dump_levels,
+                             args = (engine_path, out_dir, n_jobs, i + 1))
+        t.start()
+        thread_list.append(t)
+
+    for t in thread_list:
+        t.join()
 
 if __name__ == "__main__":
     engine_path = "Chowdren"
     out_dir = "."
+    n_jobs = 1
 
     try:
-        opt_val, params = getopt(sys.argv[1:], "i:o:", ["in=", "out="])
+        opt_val, params = getopt(sys.argv[1:], "i:o:j:", ["in=", "out=", "jobs="])
         for option, value in opt_val:
             if option == "-i" or option == "--in":
                 engine_path = value
             elif option == "-o" or option == "--out":
                 out_dir = value
+            elif option == "-j" or option == "--jobs":
+                n_jobs = int(value)
     except GetoptError:
         print usage_string
         exit(1)
 
-        dump_all_levels(engine_path, out_dir)
+    dump_all_levels(engine_path, out_dir, n_jobs)
