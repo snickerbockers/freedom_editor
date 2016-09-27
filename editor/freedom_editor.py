@@ -16,6 +16,7 @@ import fp_project
 
 import level_display
 import project_menu
+import object_attrs
 
 project_path = None
 cur_frame = None
@@ -29,6 +30,8 @@ def set_frame(frame_no):
     loads frame_no
     """
     cur_frame = frame.FpFrame(project_path, frame_no)
+    if len(cur_frame.objs) >= 1:
+        object_attrs.select_obj(cur_frame.objs[0])
     level_display.invalidate()
 
 def main():
@@ -39,6 +42,7 @@ def main():
 
     level_display.set_builder(builder)
     project_menu.set_builder(builder)
+    object_attrs.set_builder(builder)
 
     callbacks = {
         "main_window_delete_event" : main_window_delete_event,
