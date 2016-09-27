@@ -40,7 +40,7 @@ def on_project_new(*args):
     game_path = game_path_box.get_text()
     proj_path = proj_path_box.get_text()
 
-    new_project_dialog.destroy()
+    new_project_dialog.hide
 
     if response_id == 1:
         # User clicked OK
@@ -57,7 +57,7 @@ def on_project_new(*args):
                           priority = GLib.PRIORITY_HIGH)
         GLib.idle_add(check_up_on_fp_proj_sub)
         progress_dialog.run()
-        progress_dialog.destroy()
+        progress_dialog.hide()
         freedom_editor.project_path = proj_path
 
 def check_up_on_fp_proj_sub():
@@ -162,4 +162,4 @@ def on_project_open_frame(*args):
         selected_frame = int(selected_frame[:selected_frame.find('.')])
 
         freedom_editor.set_frame(selected_frame)
-    choose_frame_dialog.destroy()
+    choose_frame_dialog.hide()
