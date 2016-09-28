@@ -24,6 +24,8 @@ def set_builder(builder):
 
 
 def select_frame(new_frame):
+    obj_list_liststore.clear()
+
     for idx, obj in enumerate(new_frame.objs):
         # The index of the object is appended to the second column to be used
         # as a unique ID so we know which object was clicked in new_obj_selected
