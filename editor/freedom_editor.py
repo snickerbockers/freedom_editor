@@ -42,6 +42,18 @@ def select_object(obj_idx):
     """
     object_attrs.select_obj(cur_frame.objs[obj_idx])
 
+def set_obj_pos(obj, new_pos):
+    """
+    Instead of setting an object's pos_x and pos_y members yourself, call this
+    method.  This method will set the position and notify any subsystems that
+    need to be notified.
+    """
+    obj.pos_x = float(new_pos[0])
+    obj.pos_y = float(new_pos[1])
+
+    # queue a redraw of the level display so that it draws obj in the new pos
+    level_display.invalidate()
+
 def main():
     global builder
 
@@ -63,7 +75,9 @@ def main():
         "on_project_open" : project_menu.on_project_open,
         "on_project_launch" : project_menu.on_project_launch,
         "on_project_open_frame" : project_menu.on_project_open_frame,
-        "new_obj_selected" : object_attrs.new_obj_selected
+        "new_obj_selected" : object_attrs.new_obj_selected,
+        "obj_attr_pos_x_activate" : object_attrs.obj_attr_pos_x_activate,
+        "obj_attr_pos_y_activate" : object_attrs.obj_attr_pos_y_activate
     }
 
     main_window = builder.get_object("main_window")

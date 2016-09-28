@@ -55,3 +55,21 @@ def new_obj_selected(widget):
     obj_idx = treemodel.get(treeiter, 1)[0]
 
     freedom_editor.select_object(obj_idx)
+
+def obj_attr_pos_x_activate(widget):
+    """
+    called when the user presses enter while the x-position text entry
+    is in-focus on the object attributes tab.
+    """
+    if selected_obj is not None:
+        freedom_editor.set_obj_pos(selected_obj, (float(widget.get_text()),
+                                                  selected_obj.pos_y))
+
+def obj_attr_pos_y_activate(widget):
+    """
+    called when the user presses enter while the y-position text entry
+    is in-focus on the object attributes tab.
+    """
+    if selected_obj is not None:
+        freedom_editor.set_obj_pos(selected_obj, (selected_obj.pos_x,
+                                                  float(widget.get_text())))
