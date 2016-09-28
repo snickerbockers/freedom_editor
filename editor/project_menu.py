@@ -131,11 +131,13 @@ def on_project_open(*args):
                                    action = Gtk.FileChooserAction.SELECT_FOLDER,
                                    buttons = dialog_buttons)
     dialog.show_all()
-    dialog.run()
-    freedom_editor.project_path = dialog.get_filename()
-    dialog.destroy()
+    action = dialog.run()
 
-    freedom_editor.set_frame(21)
+    if action == Gtk.ResponseType.ACCEPT:
+        freedom_editor.project_path = dialog.get_filename()
+        freedom_editor.set_frame(21)
+
+    dialog.destroy()
 
 def on_project_launch(*args):
     if freedom_editor.project_path is None:
