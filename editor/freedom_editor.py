@@ -31,8 +31,16 @@ def set_frame(frame_no):
     """
     cur_frame = frame.FpFrame(project_path, frame_no)
     if len(cur_frame.objs) >= 1:
-        object_attrs.select_obj(cur_frame.objs[0])
+        select_object(0)
+    object_attrs.select_frame(cur_frame)
     level_display.invalidate()
+
+def select_object(obj_idx):
+    """
+    This method should be called to select the object
+    indicated by object_idx.
+    """
+    object_attrs.select_obj(cur_frame.objs[obj_idx])
 
 def main():
     global builder
@@ -54,7 +62,8 @@ def main():
         "on_new_project_project_path_browse" : project_menu.on_new_project_project_path_browse,
         "on_project_open" : project_menu.on_project_open,
         "on_project_launch" : project_menu.on_project_launch,
-        "on_project_open_frame" : project_menu.on_project_open_frame
+        "on_project_open_frame" : project_menu.on_project_open_frame,
+        "new_obj_selected" : object_attrs.new_obj_selected
     }
 
     main_window = builder.get_object("main_window")
