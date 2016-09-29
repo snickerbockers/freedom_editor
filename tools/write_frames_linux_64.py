@@ -14,6 +14,7 @@ usage_string = "%s -i|--in <path-to-Chowdren> -o|--out <path-to-lvl-files>" % \
 def write_frame(frame_no, lvl_prefix):
     lvl_path = os.path.join(lvl_prefix, "%d.lvl" % frame_no)
     print "writing frame %d from %s..." % (frame_no, lvl_path)
+    sys.stdout.flush()
     lvl_frame = json.load(fp = open(lvl_path, "r"))
 
     for obj in lvl_frame['objects']:

@@ -85,7 +85,31 @@ def update_progress_dialog(fd, condition):
         return True
     return False
 
+def on_project_build(*args):
+    """
+    Called when the user clicks Project=>Build.
+    """
+    global fp_proj_sub
 
+    proj_path = freedom_editor.project_path
+
+    if proj_path is None:
+        return
+
+    progress_dialog.set_transient_for(main_window)
+    progress_dialog.show_all()
+
+    fp_proj_sub = subprocess.Popen(["../tools/fp_project.py",
+                                    "build", proj_path],
+                                   stdout = subprocess.PIPE)
+    GLib.io_add_watch(fp_proj_sub.stdout,
+                      GLib.IO_IN,
+                      update_progress_dialog,
+                      priority = GLib.PRIORITY_HIGH)
+    GLib.idle_add(check_up_on_fp_proj_sub)
+    progress_dialog.run()
+    progress_dialog.hide()
+    freedom_editor.project_path = proj_path
 
 def on_new_project_game_path_browse(*args):
     """

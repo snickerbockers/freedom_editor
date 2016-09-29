@@ -380,6 +380,7 @@
                         <property name="can_focus">False</property>
                         <property name="image">image1</property>
                         <property name="use_stock">False</property>
+                        <signal name="activate" handler="on_project_build" swapped="no"/>
                       </object>
                     </child>
                     <child>
