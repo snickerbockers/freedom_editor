@@ -99,6 +99,18 @@ def get_object_at_pos(pos):
             return idx
     return None
 
+def save_current_frame():
+    """
+    save the current frame to its json (.lvl) file
+    """
+    if cur_frame is None:
+        return
+    dat = cur_frame.convert_to_json()
+    frame_path = os.path.join(project_path, "levels", "%d.lvl" %
+                              cur_frame.frame_no)
+
+    open(frame_path, "w").write(dat)
+
 def main():
     global builder
 
@@ -121,6 +133,7 @@ def main():
         "on_project_open" : project_menu.on_project_open,
         "on_project_launch" : project_menu.on_project_launch,
         "on_project_open_frame" : project_menu.on_project_open_frame,
+        "on_project_save_frame" : project_menu.on_project_save_frame,
         "new_obj_selected" : object_attrs.new_obj_selected,
         "obj_attr_pos_x_activate" : object_attrs.obj_attr_pos_x_activate,
         "obj_attr_pos_y_activate" : object_attrs.obj_attr_pos_y_activate

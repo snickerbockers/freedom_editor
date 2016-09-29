@@ -109,6 +109,11 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-open</property>
   </object>
+  <object class="GtkImage" id="image3">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-save</property>
+  </object>
   <object class="GtkDialog" id="new_project_dialog">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
@@ -395,6 +400,16 @@
                         <property name="image">image2</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_project_open_frame" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="project_save_frame">
+                        <property name="label" translatable="yes">Save Frame</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="image">image3</property>
+                        <property name="use_stock">False</property>
+                        <signal name="activate" handler="on_project_save_frame" swapped="no"/>
                       </object>
                     </child>
                   </object>

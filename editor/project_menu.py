@@ -165,3 +165,6 @@ def on_project_open_frame(*args):
 
         freedom_editor.set_frame(selected_frame)
     choose_frame_dialog.hide()
+
+def on_project_save_frame(*args):
+    freedom_editor.save_current_frame()
