@@ -21,6 +21,8 @@ import object_attrs
 project_path = None
 cur_frame = None
 
+selected_obj_idx = None
+
 def main_window_delete_event(self, *args):
     Gtk.main_quit(*args)
 
@@ -40,7 +42,17 @@ def select_object(obj_idx):
     This method should be called to select the object
     indicated by object_idx.
     """
-    object_attrs.select_obj(cur_frame.objs[obj_idx])
+    global selected_obj_idx
+
+    if obj_idx is not None:
+        object_attrs.select_obj(cur_frame.objs[obj_idx])
+    selected_obj_idx = obj_idx
+
+def get_selected_object():
+    """
+    returns the index of the currently selected object, or None
+    """
+    return selected_obj_idx
 
 def set_obj_pos(obj, new_pos):
     """
@@ -53,6 +65,39 @@ def set_obj_pos(obj, new_pos):
 
     # queue a redraw of the level display so that it draws obj in the new pos
     level_display.invalidate()
+
+def get_object_by_index(idx):
+
+    # TODO: find a better way to handle the possibility that cur_frame could
+    #       be none, the way this is implemented is a mess and I would be
+    #       seriously worried about fucking up the heap if I was writing this
+    #       in C.
+    if cur_frame is None:
+        return None
+    return cur_frame.objs[idx]
+
+def get_object_at_pos(pos):
+    """
+    iterate through all objects in cur_frame and return the first object which
+    contains pos within it (or None if there is no such object).
+    """
+    if cur_frame is None:
+        return None
+
+    for idx, obj in enumerate(cur_frame.objs):
+        if obj.error != 0:
+            continue
+        if obj.image is None:
+            continue
+        obj_x = obj.pos_x
+        obj_y = obj.pos_y
+        obj_w = obj.image.get_width()
+        obj_h = obj.image.get_height()
+
+        if pos[0] >= obj_x and pos[0] < (obj_x + obj_w) and \
+           pos[1] >= obj_y and pos[1] < (obj_y + obj_h):
+            return idx
+    return None
 
 def main():
     global builder
@@ -67,6 +112,7 @@ def main():
     callbacks = {
         "main_window_delete_event" : main_window_delete_event,
         "on_level_display_click" : level_display.on_click,
+        "on_level_display_unclick" : level_display.on_unclick,
         "on_level_display_drag" : level_display.on_mouse_motion,
         "on_level_display_draw" : level_display.on_draw,
         "on_project_new" : project_menu.on_project_new,
