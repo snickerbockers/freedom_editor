@@ -44,7 +44,9 @@ def select_object(obj_idx):
     """
     global selected_obj_idx
 
-    if obj_idx is not None:
+    if obj_idx is None:
+        object_attrs.select_obj(None)
+    else:
         object_attrs.select_obj(cur_frame.objs[obj_idx])
     selected_obj_idx = obj_idx
 

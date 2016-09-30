@@ -56,8 +56,7 @@ def on_click(widget, event):
 
             obj_idx = freedom_editor.get_object_at_pos(world_cursor)
 
-            if obj_idx is not None:
-                freedom_editor.select_object(obj_idx)
+            freedom_editor.select_object(obj_idx)
 
 def on_unclick(widget, event):
     """

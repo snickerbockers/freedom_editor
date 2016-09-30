@@ -11,7 +11,7 @@ selected_obj = None
 def set_builder(builder):
     global obj_attr_pos_x, obj_attr_pos_y, \
         obj_attr_addr_pos_x, obj_attr_addr_pos_y, obj_attr_class, \
-        obj_attr_error, obj_list_treeview, obj_list_liststore
+        obj_attr_error, obj_list_treeview, obj_list_liststore, obj_attrs_box
 
     obj_attr_pos_x = builder.get_object("obj_attr_pos_x")
     obj_attr_pos_y = builder.get_object("obj_attr_pos_y")
@@ -21,6 +21,7 @@ def set_builder(builder):
     obj_attr_error = builder.get_object("obj_attr_error")
     obj_list_treeview = builder.get_object("obj_list_treeview")
     obj_list_liststore = builder.get_object("obj_list_liststore")
+    obj_attrs_box = builder.get_object("obj_attrs_box")
 
 
 def select_frame(new_frame):
@@ -45,6 +46,10 @@ def select_obj(obj):
         obj_attr_addr_pos_y.set_text(str(selected_obj.addr_pos_y))
         obj_attr_class.set_text(selected_obj.obj_class)
         obj_attr_error.set_text(str(selected_obj.error))
+
+        obj_attrs_box.set_sensitive(True)
+    else:
+        obj_attrs_box.set_sensitive(False)
 
 def new_obj_selected(widget):
     """
