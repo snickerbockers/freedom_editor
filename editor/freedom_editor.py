@@ -136,8 +136,8 @@ def main():
         "on_project_save_frame" : project_menu.on_project_save_frame,
         "on_project_build" : project_menu.on_project_build,
         "new_obj_selected" : object_attrs.new_obj_selected,
-        "obj_attr_pos_x_activate" : object_attrs.obj_attr_pos_x_activate,
-        "obj_attr_pos_y_activate" : object_attrs.obj_attr_pos_y_activate
+        "on_obj_attr_pos_x_enter_text" : object_attrs.on_obj_attr_pos_x_enter_text,
+        "on_obj_attr_pos_y_enter_text" : object_attrs.on_obj_attr_pos_y_enter_text
     }
 
     main_window = builder.get_object("main_window")

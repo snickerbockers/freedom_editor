@@ -56,20 +56,43 @@ def new_obj_selected(widget):
 
     freedom_editor.select_object(obj_idx)
 
-def obj_attr_pos_x_activate(widget):
+def text_is_float(txt):
+    if len(txt) <= 0:
+        return False
+
+    if type(txt) != str:
+        return False
+
+    dot_count = 0
+    for c in txt:
+        if c.isdigit():
+            continue
+        if c == '.':
+            dot_count += 1
+            if dot_count >= 2:
+                return False
+    return True
+
+def on_obj_attr_pos_x_enter_text(widget):
     """
     called when the user presses enter while the x-position text entry
     is in-focus on the object attributes tab.
     """
-    if selected_obj is not None:
-        freedom_editor.set_obj_pos(selected_obj, (float(widget.get_text()),
+    if selected_obj is not None and not selected_obj.error:
+        txt = widget.get_text()
+        if not text_is_float(txt):
+            return
+        freedom_editor.set_obj_pos(selected_obj, (float(txt),
                                                   selected_obj.pos_y))
 
-def obj_attr_pos_y_activate(widget):
+def on_obj_attr_pos_y_enter_text(widget):
     """
     called when the user presses enter while the y-position text entry
     is in-focus on the object attributes tab.
     """
-    if selected_obj is not None:
+    if selected_obj is not None and not selected_obj.error:
+        txt = widget.get_text()
+        if not text_is_float(txt):
+            return
         freedom_editor.set_obj_pos(selected_obj, (selected_obj.pos_x,
-                                                  float(widget.get_text())))
+                                                  float(txt)))

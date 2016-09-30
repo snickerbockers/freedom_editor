@@ -554,7 +554,7 @@
                       <object class="GtkEntry" id="obj_attr_pos_x">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <signal name="activate" handler="obj_attr_pos_x_activate" swapped="no"/>
+                        <signal name="changed" handler="on_obj_attr_pos_x_enter_text" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
@@ -565,7 +565,7 @@
                       <object class="GtkEntry" id="obj_attr_pos_y">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <signal name="activate" handler="obj_attr_pos_y_activate" swapped="no"/>
+                        <signal name="changed" handler="on_obj_attr_pos_y_enter_text" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
