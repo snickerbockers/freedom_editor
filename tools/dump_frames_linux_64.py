@@ -124,6 +124,8 @@ def parse_frame(r2, frame_no):
     last_y_val = None
     frame_w = None
     frame_h = None
+    frame_w_addr = None
+    frame_h_addr = None
     last_x_val_addr = None
     last_y_val_addr = None
 
@@ -135,10 +137,12 @@ def parse_frame(r2, frame_no):
 
         re_match = set_width_re.match(inst)
         if re_match is not None:
+            frame_w_addr = int(r2.cmd("s"), 0)
             frame_w = re_match.group(1)
 
         re_match = set_height_re.match(inst)
         if re_match is not None:
+            frame_h_addr = int(r2.cmd("s"), 0)
             frame_h = re_match.group(1)
 
         re_match = call_create_func.match(inst)
@@ -176,10 +180,21 @@ def parse_frame(r2, frame_no):
         if img_id is not None:
             objs[idx]['image'] = img_id;
 
+    # Unlike with objects, having an error in a frame doesn't mean we ignore
+    # the entire frame, it just means that we shouldn't edit the frame
+    # attributes
+    frame_error = 0
+    if frame_w is None or frame_w_addr is None or \
+       frame_h is None or frame_h_addr is None:
+        frame_error = 1
+
     return {"width" : int(frame_w, 0),
+            "width_addr" : frame_w_addr,
             "height" : int(frame_h, 0),
+            "height_addr" : frame_h_addr,
             "frame_no" : frame_no,
-            "objects" : objs}
+            "objects" : objs,
+            "error" : frame_error}
 
 def do_dump_levels(engine_path, out_dir, n_jobs = 1, start_idx = 1):
     r2 = r2pipe.open(engine_path)

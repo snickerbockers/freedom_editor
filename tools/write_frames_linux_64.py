@@ -17,6 +17,16 @@ def write_frame(frame_no, lvl_prefix):
     sys.stdout.flush()
     lvl_frame = json.load(fp = open(lvl_path, "r"))
 
+    # write frame width and height if they were obtained error-free.
+    if lvl_frame["error"] == 0:
+        r2.cmd("s %d" % lvl_frame["width_addr"])
+        r2.cmd("s+ 3")
+        r2.cmd("wv4 %d" % lvl_frame["width"])
+
+        r2.cmd("s %d" % lvl_frame["height_addr"])
+        r2.cmd("s+ 3")
+        r2.cmd("wv4 %d" % lvl_frame["height"])
+
     for obj in lvl_frame['objects']:
         if obj["error"] != 0:
             continue
