@@ -67,10 +67,12 @@ def text_is_float(txt):
     for c in txt:
         if c.isdigit():
             continue
-        if c == '.':
+        elif c == '.':
             dot_count += 1
             if dot_count >= 2:
                 return False
+        else:
+            return False
     return True
 
 def edit_obj_class(new_class):
