@@ -67,6 +67,13 @@ def set_obj_pos(obj, new_pos):
     # queue a redraw of the level display so that it draws obj in the new pos
     level_display.invalidate()
 
+    object_attrs.edit_obj_class(obj.obj_class)
+    object_attrs.edit_pos_x(obj.pos_x)
+    object_attrs.edit_pos_y(obj.pos_y)
+    object_attrs.edit_addr_pos_x(obj.addr_pos_x)
+    object_attrs.edit_addr_pos_y(obj.addr_pos_y)
+    object_attrs.edit_error(obj.error)
+
 def get_object_by_index(idx):
 
     # TODO: find a better way to handle the possibility that cur_frame could
@@ -137,8 +144,7 @@ def main():
         "on_project_save_frame" : project_menu.on_project_save_frame,
         "on_project_build" : project_menu.on_project_build,
         "new_obj_selected" : object_attrs.new_obj_selected,
-        "on_obj_attr_pos_x_enter_text" : object_attrs.on_obj_attr_pos_x_enter_text,
-        "on_obj_attr_pos_y_enter_text" : object_attrs.on_obj_attr_pos_y_enter_text
+        "on_obj_attr_edit" : object_attrs.on_obj_attr_edit
     }
 
     main_window = builder.get_object("main_window")
