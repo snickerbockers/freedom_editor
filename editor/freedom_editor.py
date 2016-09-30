@@ -32,8 +32,7 @@ def set_frame(frame_no):
     loads frame_no
     """
     cur_frame = frame.FpFrame(project_path, frame_no)
-    if len(cur_frame.objs) >= 1:
-        select_object(0)
+    select_object(None)
     object_attrs.select_frame(cur_frame)
     level_display.invalidate()
 
