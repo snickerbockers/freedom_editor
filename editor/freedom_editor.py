@@ -23,6 +23,17 @@ cur_frame = None
 
 selected_obj_idx = None
 
+# When you open a project or create a new one, it immediately loads the
+# DEFAULT_FRAME, which is Dragon Valley Act 1
+DEFAULT_FRAME = 21
+
+def load_project(proj_path):
+    global project_path
+    project_path = proj_path
+
+    # We default to Dragon Valley act 1
+    set_frame(DEFAULT_FRAME)
+
 def main_window_delete_event(self, *args):
     Gtk.main_quit(*args)
 

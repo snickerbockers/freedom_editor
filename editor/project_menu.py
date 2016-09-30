@@ -40,7 +40,7 @@ def on_project_new(*args):
     game_path = game_path_box.get_text()
     proj_path = proj_path_box.get_text()
 
-    new_project_dialog.hide
+    new_project_dialog.hide()
 
     if response_id == 1:
         # User clicked OK
@@ -58,7 +58,8 @@ def on_project_new(*args):
         GLib.idle_add(check_up_on_fp_proj_sub)
         progress_dialog.run()
         progress_dialog.hide()
-        freedom_editor.project_path = proj_path
+
+        freedom_editor.load_project(proj_path)
 
 def check_up_on_fp_proj_sub():
     fp_proj_sub.poll()
@@ -158,8 +159,7 @@ def on_project_open(*args):
     action = dialog.run()
 
     if action == Gtk.ResponseType.ACCEPT:
-        freedom_editor.project_path = dialog.get_filename()
-        freedom_editor.set_frame(21)
+        freedom_editor.load_project(dialog.get_filename())
 
     dialog.destroy()
 
