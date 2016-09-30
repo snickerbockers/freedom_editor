@@ -99,6 +99,36 @@
       <action-widget response="1">choose_frame_dialog_ok</action-widget>
     </action-widgets>
   </object>
+  <object class="GtkListStore" id="frame_attrs_liststore">
+    <columns>
+      <!-- column-name attr -->
+      <column type="gchararray"/>
+      <!-- column-name val -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">frame_width</col>
+        <col id="1" translatable="yes">0</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">frame_height</col>
+        <col id="1" translatable="yes">0</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">frame_width_addr</col>
+        <col id="1" translatable="yes">0</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">frame_height_addr</col>
+        <col id="1" translatable="yes">0</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">frame_error</col>
+        <col id="1" translatable="yes">0</col>
+      </row>
+    </data>
+  </object>
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -607,10 +637,38 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="label8">
+                  <object class="GtkTreeView" id="frame_attrs_treeview">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">unimplemented</property>
+                    <property name="can_focus">True</property>
+                    <property name="model">frame_attrs_liststore</property>
+                    <child internal-child="selection">
+                      <object class="GtkTreeSelection" id="treeview-selection4"/>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="treeviewcolumn5">
+                        <property name="title" translatable="yes">attr</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext5"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="treeviewcolumn6">
+                        <property name="title" translatable="yes">val</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext6">
+                            <property name="editable">True</property>
+                            <signal name="edited" handler="on_frame_attr_edit" swapped="no"/>
+                          </object>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                   <packing>
                     <property name="position">2</property>

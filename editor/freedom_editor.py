@@ -36,6 +36,21 @@ def set_frame(frame_no):
     object_attrs.select_frame(cur_frame)
     level_display.invalidate()
 
+    # update the frame attrs ui
+    frame.edit_frame_width(cur_frame.width)
+    frame.edit_frame_height(cur_frame.height)
+    frame.edit_frame_width_addr(cur_frame.width_addr)
+    frame.edit_frame_height_addr(cur_frame.height_addr)
+    frame.edit_frame_error(cur_frame.error)
+
+def set_frame_width(frame_width):
+    cur_frame.width = frame_width
+    frame.edit_frame_width(cur_frame.width)
+
+def set_frame_height(frame_height):
+    cur_frame.height = frame_height
+    frame.edit_frame_height(cur_frame.height)
+
 def select_object(obj_idx):
     """
     This method should be called to select the object
@@ -128,6 +143,7 @@ def main():
     level_display.set_builder(builder)
     project_menu.set_builder(builder)
     object_attrs.set_builder(builder)
+    frame.set_builder(builder)
 
     callbacks = {
         "main_window_delete_event" : main_window_delete_event,
@@ -144,7 +160,8 @@ def main():
         "on_project_save_frame" : project_menu.on_project_save_frame,
         "on_project_build" : project_menu.on_project_build,
         "new_obj_selected" : object_attrs.new_obj_selected,
-        "on_obj_attr_edit" : object_attrs.on_obj_attr_edit
+        "on_obj_attr_edit" : object_attrs.on_obj_attr_edit,
+        "on_frame_attr_edit" : frame.on_frame_attr_edit
     }
 
     main_window = builder.get_object("main_window")
