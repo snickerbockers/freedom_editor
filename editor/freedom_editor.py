@@ -45,6 +45,7 @@ def set_frame(frame_no):
     cur_frame = frame.FpFrame(project_path, frame_no)
     select_object(None)
     object_attrs.select_frame(cur_frame)
+    level_display.set_trans(0, 0)
     level_display.invalidate()
 
     # update the frame attrs ui

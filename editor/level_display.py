@@ -113,6 +113,16 @@ def on_draw(widget, cr):
         freedom_editor.cur_frame.draw(cr)
         cr.paint()
 
+def set_trans(trans_x, trans_y):
+    """
+    Set the translation of the level_display's drawing area.
+    This does not queue a redraw, so make sure to call invalidate after
+    """
+    global level_display_trans_x, level_display_trans_y
+
+    level_display_trans_x = trans_x
+    level_display_trans_y = trans_y
+
 GRID_WIDTH = 32
 GRID_HEIGHT = 32
 
