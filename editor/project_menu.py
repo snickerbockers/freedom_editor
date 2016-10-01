@@ -44,6 +44,7 @@ def on_project_new(*args):
 
     if response_id == 1:
         # User clicked OK
+        clear_progress_dialog()
         progress_dialog.set_transient_for(main_window)
         progress_dialog.show_all()
 
@@ -67,6 +68,12 @@ def check_up_on_fp_proj_sub():
         progress_dialog_ok_button.set_sensitive(True)
         return False
     return True
+
+def clear_progress_dialog():
+    """
+    deletes all the text from the progress_dialog_textview
+    """
+    progress_dialog_textview.get_buffer().set_text("")
 
 def update_progress_dialog(fd, condition):
     textview = progress_dialog_textview
@@ -97,6 +104,7 @@ def on_project_build(*args):
     if proj_path is None:
         return
 
+    clear_progress_dialog()
     progress_dialog.set_transient_for(main_window)
     progress_dialog.show_all()
 
