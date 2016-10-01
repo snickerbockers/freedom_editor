@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import math
+
 import freedom_editor
 
 drawing_area = None
@@ -106,6 +108,38 @@ def invalidate():
 
 def on_draw(widget, cr):
     cr.translate(level_display_trans_x, level_display_trans_y)
+    draw_grid(cr, widget.get_allocation().width, widget.get_allocation().height)
     if freedom_editor.cur_frame is not None:
         freedom_editor.cur_frame.draw(cr)
         cr.paint()
+
+GRID_WIDTH = 32
+GRID_HEIGHT = 32
+
+def draw_grid(cr, width, height):
+    """
+    draw an infinite grid to help players align their creations.
+    cr - cairo context
+    width - width of the level_display drawing area
+    height - height of the level_display drawing area
+    """
+    cr.set_source_rgb(0, 0, 255)
+    cr.set_line_width(0.5)
+
+    x_start = (int(-level_display_trans_x) / GRID_WIDTH) * GRID_WIDTH
+    x_end = x_start + (int(width) / GRID_WIDTH) * GRID_WIDTH + GRID_WIDTH
+
+    y_start = (int(-level_display_trans_y) / GRID_HEIGHT) * GRID_HEIGHT
+    y_end = y_start + (int(width) / GRID_HEIGHT) * GRID_HEIGHT + GRID_HEIGHT
+
+    # draw vertical lines
+    for col in range(int(x_start), x_end, GRID_WIDTH):
+        cr.move_to(col, y_start)
+        cr.line_to(col, y_end)
+
+    # draw horizontal lines
+    for row in range(int(y_start), y_end, GRID_HEIGHT):
+        cr.move_to(x_start, row)
+        cr.line_to(x_end, row)
+
+    cr.stroke()
