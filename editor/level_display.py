@@ -108,6 +108,9 @@ def on_draw(widget, cr):
     cr.translate(level_display_trans_x, level_display_trans_y)
     draw_grid(cr, widget.get_allocation().width, widget.get_allocation().height)
     if freedom_editor.cur_frame is not None:
+        draw_frame_borders(cr, freedom_editor.cur_frame.width,
+                           freedom_editor.cur_frame.height)
+    if freedom_editor.cur_frame is not None:
         freedom_editor.cur_frame.draw(cr)
         cr.paint()
 
@@ -152,5 +155,22 @@ def draw_grid(cr, width, height):
     for row in range(int(y_start), y_end, GRID_HEIGHT):
         cr.move_to(x_start, row)
         cr.line_to(x_end, row)
+
+    cr.stroke()
+
+def draw_frame_borders(cr, x_border, y_border):
+    """
+    draw a red box from (0, 0) to (x_border, y_border).
+    This is used to correspond to the frame's own borders.
+    """
+    cr.set_source_rgb(255, 0, 0)
+    cr.set_line_width(2.0)
+
+    cr.move_to(0, 0)
+
+    cr.line_to(0, y_border)
+    cr.line_to(x_border,  y_border)
+    cr.line_to(x_border, 0)
+    cr.line_to(0, 0)
 
     cr.stroke()
