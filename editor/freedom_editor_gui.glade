@@ -315,6 +315,14 @@
         <col id="0" translatable="yes">error</col>
         <col id="1" translatable="yes">null</col>
       </row>
+      <row>
+        <col id="0" translatable="yes">width</col>
+        <col id="1" translatable="yes">null</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">height</col>
+        <col id="1" translatable="yes">null</col>
+      </row>
     </data>
   </object>
   <object class="GtkListStore" id="obj_list_liststore">

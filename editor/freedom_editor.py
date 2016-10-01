@@ -99,6 +99,8 @@ def set_obj_pos(obj, new_pos):
     object_attrs.edit_addr_pos_x(obj.addr_pos_x)
     object_attrs.edit_addr_pos_y(obj.addr_pos_y)
     object_attrs.edit_error(obj.error)
+    object_attrs.edit_width(obj.get_width())
+    object_attrs.edit_height(obj.get_height())
 
 def get_object_by_index(idx):
 

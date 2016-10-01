@@ -131,6 +131,26 @@ def edit_error(new_error):
 
     obj_attrs_liststore.set_value(tree_iter, 1, str(new_error))
 
+def edit_width(new_width):
+    """
+    Call this when the width of the currently selected object should be
+    updated in the UI.
+    """
+    tree_model = obj_attrs_treeview.get_model()
+    tree_iter = tree_model.get_iter(6)
+
+    obj_attrs_liststore.set_value(tree_iter, 1, str(new_width))
+
+def edit_height(new_height):
+    """
+    Call this when the height of the currently selected object should be
+    updated in the UI.
+    """
+    tree_model = obj_attrs_treeview.get_model()
+    tree_iter = tree_model.get_iter(7)
+
+    obj_attrs_liststore.set_value(tree_iter, 1, str(new_height))
+
 def on_obj_attr_edit(widget, path, val):
     """
     Called when the user tries to edit one of the attributes in the obj attr
@@ -168,6 +188,12 @@ def on_obj_attr_edit(widget, path, val):
         return
     elif int(path) == 5:
         # error
+        return
+    elif int(path) == 6:
+        # width
+        return
+    elif int(path) == 7:
+        # height
         return
     else:
         raise RuntimeError("unrecognized path %d in obj_attrs_treeview" % \

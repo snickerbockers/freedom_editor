@@ -23,7 +23,23 @@ class FpObj:
             self.image_handle = obj_dict["image"]
         self.obj_class = obj_dict["obj_class"]
         self.error = obj_dict["error"]
-        
+
+    def get_width(self):
+        """
+        return width of this object's sprite
+        """
+        if self.image is None:
+            return None
+        return self.image.get_width()
+
+    def get_height(self):
+        """
+        return height of this object's sprite
+        """
+        if self.image is None:
+            return None
+        return self.image.get_height()
+
 class FpFrame:
     def __init__(self, proj_path, frame_no):
         frame_path = os.path.join(proj_path, "levels", "%d.lvl" % frame_no)
