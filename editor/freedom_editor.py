@@ -23,9 +23,18 @@ cur_frame = None
 
 selected_obj_idx = None
 
+# if true, objects will be snapped to the grid when they are moved
+do_snap_to_grid = False
+
 # When you open a project or create a new one, it immediately loads the
 # DEFAULT_FRAME, which is Dragon Valley Act 1
 DEFAULT_FRAME = 21
+
+# The width and height of the grid nodes.  This is used both by the
+# "snap-to-grid" feature (when you're moving objects) and the grid that gets
+# drawn in the level_display's draw_grid method
+GRID_WIDTH = 32
+GRID_HEIGHT = 32
 
 def load_project(proj_path):
     global project_path
@@ -82,14 +91,35 @@ def get_selected_object():
     """
     return selected_obj_idx
 
+def obj_snap(obj_pos, obj_len):
+    """
+    1-dimensional snap-to-grid .
+    obj_pos should be the object's x or y coordinate
+    obj_len should be the object's width or height
+    """
+    snap_min = (int(obj_pos) / 32) * 32
+    snap_max = (int(obj_pos + obj_len) / 32) * 32 - obj_pos
+
+    if abs(obj_pos - snap_min) < abs(obj_pos - snap_max):
+        snap_best = snap_min
+    else:
+        snap_best = snap_max
+
+    if abs(snap_best - obj_pos) < 8:
+        return snap_best
+    return obj_pos
 def set_obj_pos(obj, new_pos):
     """
     Instead of setting an object's pos_x and pos_y members yourself, call this
     method.  This method will set the position and notify any subsystems that
     need to be notified.
     """
-    obj.pos_x = float(new_pos[0])
-    obj.pos_y = float(new_pos[1])
+    if do_snap_to_grid:
+        obj.pos_x = float(obj_snap(new_pos[0], obj.get_width()))
+        obj.pos_y = float(obj_snap(new_pos[1], obj.get_height()))
+    else:
+        obj.pos_x = float(new_pos[0])
+        obj.pos_y = float(new_pos[1])
 
     # queue a redraw of the level display so that it draws obj in the new pos
     level_display.invalidate()
@@ -148,6 +178,17 @@ def save_current_frame():
 
     open(frame_path, "w").write(dat)
 
+def on_toggle_snap_to_grid_button(widget):
+    """
+    Called when the user toggles the "Snap to Grid" togglebutton on the toolbar
+    """
+    global do_snap_to_grid
+
+    if do_snap_to_grid:
+        do_snap_to_grid = False
+    else:
+        do_snap_to_grid = True
+
 def main():
     global builder
 
@@ -175,7 +216,8 @@ def main():
         "on_project_build" : project_menu.on_project_build,
         "new_obj_selected" : object_attrs.new_obj_selected,
         "on_obj_attr_edit" : object_attrs.on_obj_attr_edit,
-        "on_frame_attr_edit" : frame.on_frame_attr_edit
+        "on_frame_attr_edit" : frame.on_frame_attr_edit,
+        "on_toggle_snap_to_grid_button" : on_toggle_snap_to_grid_button
     }
 
     main_window = builder.get_object("main_window")

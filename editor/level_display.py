@@ -124,9 +124,6 @@ def set_trans(trans_x, trans_y):
     level_display_trans_x = trans_x
     level_display_trans_y = trans_y
 
-GRID_WIDTH = 32
-GRID_HEIGHT = 32
-
 def draw_grid(cr, width, height):
     """
     draw an infinite grid to help players align their creations.
@@ -140,19 +137,23 @@ def draw_grid(cr, width, height):
     # In the x_end/y_end calculations, GRID_WIDTH/GRID_HEIGHT is multiplied by 2
     # because the range function will stop at the col/row *before* it gets to
     # x_end/y_end.
-    x_start = (int(-level_display_trans_x) / GRID_WIDTH) * GRID_WIDTH
-    x_end = x_start + (int(width) / GRID_WIDTH) * GRID_WIDTH + GRID_WIDTH * 2
+    x_start = (int(-level_display_trans_x) / freedom_editor.GRID_WIDTH) * \
+              freedom_editor.GRID_WIDTH
+    x_end = x_start + (int(width) / freedom_editor.GRID_WIDTH) * \
+            freedom_editor.GRID_WIDTH + freedom_editor.GRID_WIDTH * 2
 
-    y_start = (int(-level_display_trans_y) / GRID_HEIGHT) * GRID_HEIGHT
-    y_end = y_start + (int(height) / GRID_HEIGHT) * GRID_HEIGHT + GRID_HEIGHT * 2
+    y_start = (int(-level_display_trans_y) / freedom_editor.GRID_HEIGHT) * \
+              freedom_editor.GRID_HEIGHT
+    y_end = y_start + (int(height) / freedom_editor.GRID_HEIGHT) * \
+            freedom_editor.GRID_HEIGHT + freedom_editor.GRID_HEIGHT * 2
 
     # draw vertical lines
-    for col in range(int(x_start), x_end, GRID_WIDTH):
+    for col in range(int(x_start), x_end, freedom_editor.GRID_WIDTH):
         cr.move_to(col, y_start)
         cr.line_to(col, y_end)
 
     # draw horizontal lines
-    for row in range(int(y_start), y_end, GRID_HEIGHT):
+    for row in range(int(y_start), y_end, freedom_editor.GRID_HEIGHT):
         cr.move_to(x_start, row)
         cr.line_to(x_end, row)
 
