@@ -20,6 +20,22 @@ STATE_PAN = 1
 STATE_DRAG_OBJ = 2
 mouse_state = STATE_NORM
 
+################################################################################
+#
+# STUPID FUCKING HACK
+#
+# I tried putting this function in freedom_editor.py; it didn't work.
+# SOMEHOW the do_snap_to_grid variable wasn't getting updated (and I *DID*
+# remember to put in "global do_snap_to_grid" at the top of the function).
+# I have no fucking idea what went wrong, but I will remember this moment next
+# time I'm considering using Python for a project.
+#
+################################################################################
+def on_toggle_snap_to_grid_button(widget):
+    """
+    Called when the user toggles the "Snap to Grid" togglebutton on the toolbar
+    """
+    freedom_editor.do_snap_to_grid = widget.get_active()
 
 def set_builder(builder):
     global drawing_area, level_display_trans_X, level_display_trans_y

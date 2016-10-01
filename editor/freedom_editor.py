@@ -25,6 +25,7 @@ selected_obj_idx = None
 
 # if true, objects will be snapped to the grid when they are moved
 do_snap_to_grid = False
+snap_to_grid_toggle = None
 
 # When you open a project or create a new one, it immediately loads the
 # DEFAULT_FRAME, which is Dragon Valley Act 1
@@ -108,12 +109,14 @@ def obj_snap(obj_pos, obj_len):
     if abs(snap_best - obj_pos) < 8:
         return snap_best
     return obj_pos
+
 def set_obj_pos(obj, new_pos):
     """
     Instead of setting an object's pos_x and pos_y members yourself, call this
     method.  This method will set the position and notify any subsystems that
     need to be notified.
     """
+
     if do_snap_to_grid:
         obj.pos_x = float(obj_snap(new_pos[0], obj.get_width()))
         obj.pos_y = float(obj_snap(new_pos[1], obj.get_height()))
@@ -178,19 +181,9 @@ def save_current_frame():
 
     open(frame_path, "w").write(dat)
 
-def on_toggle_snap_to_grid_button(widget):
-    """
-    Called when the user toggles the "Snap to Grid" togglebutton on the toolbar
-    """
-    global do_snap_to_grid
-
-    if do_snap_to_grid:
-        do_snap_to_grid = False
-    else:
-        do_snap_to_grid = True
-
 def main():
     global builder
+    global snap_to_grid_toggle
 
     builder = Gtk.Builder()
     builder.add_from_file("freedom_editor_gui.glade")
@@ -217,10 +210,11 @@ def main():
         "new_obj_selected" : object_attrs.new_obj_selected,
         "on_obj_attr_edit" : object_attrs.on_obj_attr_edit,
         "on_frame_attr_edit" : frame.on_frame_attr_edit,
-        "on_toggle_snap_to_grid_button" : on_toggle_snap_to_grid_button
+        "on_toggle_snap_to_grid_button" : level_display.on_toggle_snap_to_grid_button
     }
 
     main_window = builder.get_object("main_window")
+    snap_to_grid_toggle = builder.get_object("snap_to_grid_toggle")
     builder.connect_signals(callbacks)
     main_window.show_all()
 
