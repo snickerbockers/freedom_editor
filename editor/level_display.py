@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import math
-
 import freedom_editor
 
 drawing_area = None
@@ -136,11 +134,14 @@ def draw_grid(cr, width, height):
     cr.set_source_rgb(0, 0, 255)
     cr.set_line_width(0.5)
 
+    # In the x_end/y_end calculations, GRID_WIDTH/GRID_HEIGHT is multiplied by 2
+    # because the range function will stop at the col/row *before* it gets to
+    # x_end/y_end.
     x_start = (int(-level_display_trans_x) / GRID_WIDTH) * GRID_WIDTH
-    x_end = x_start + (int(width) / GRID_WIDTH) * GRID_WIDTH + GRID_WIDTH
+    x_end = x_start + (int(width) / GRID_WIDTH) * GRID_WIDTH + GRID_WIDTH * 2
 
     y_start = (int(-level_display_trans_y) / GRID_HEIGHT) * GRID_HEIGHT
-    y_end = y_start + (int(width) / GRID_HEIGHT) * GRID_HEIGHT + GRID_HEIGHT
+    y_end = y_start + (int(height) / GRID_HEIGHT) * GRID_HEIGHT + GRID_HEIGHT * 2
 
     # draw vertical lines
     for col in range(int(x_start), x_end, GRID_WIDTH):
