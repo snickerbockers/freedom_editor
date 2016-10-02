@@ -41,8 +41,15 @@ def load_project(proj_path):
     global project_path
     project_path = proj_path
 
-    # We default to Dragon Valley act 1
-    set_frame(DEFAULT_FRAME)
+    try:
+        # We default to Dragon Valley act 1
+        set_frame(DEFAULT_FRAME)
+    except IOError as err:
+        project_path = None
+        dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO,
+                                   Gtk.ButtonsType.OK, "Invalid project path")
+        dialog.run()
+        dialog.hide()
 
 def main_window_delete_event(self, *args):
     Gtk.main_quit(*args)
