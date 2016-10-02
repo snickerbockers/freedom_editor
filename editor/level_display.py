@@ -167,20 +167,3 @@ class LevelDisplay:
         cr.line_to(0, 0)
 
         cr.stroke()
-
-    ############################################################################
-    #
-    # STUPID FUCKING HACK
-    #
-    # I tried putting this function in freedom_editor.py; it didn't work.
-    # SOMEHOW the do_snap_to_grid variable wasn't getting updated (and I *DID*
-    # remember to put in "global do_snap_to_grid" at the top of the function).
-    # I have no fucking idea what went wrong, but I will remember this moment next
-    # time I'm considering using Python for a project.
-    #
-    ############################################################################
-    def on_toggle_snap_to_grid_button(self, widget):
-        """
-        Called when the user toggles the "Snap to Grid" togglebutton on the toolbar
-        """
-        self.freedomEditor.do_snap_to_grid = widget.get_active()

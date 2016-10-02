@@ -194,6 +194,13 @@ class FreedomEditor:
 
         open(frame_path, "w").write(dat)
 
+    def on_toggle_snap_to_grid_button(self, widget):
+        """
+        Called when the user toggles the "Snap to Grid" togglebutton on the toolbar
+        """
+        self.do_snap_to_grid = widget.get_active()
+
+
 def main():
     global freedomEditor
     builder = Gtk.Builder()
@@ -218,7 +225,7 @@ def main():
         "new_obj_selected" : freedomEditor.objectAttrs.new_obj_selected,
         "on_obj_attr_edit" : freedomEditor.objectAttrs.on_obj_attr_edit,
         "on_frame_attr_edit" : freedomEditor.frameAttrs.on_frame_attr_edit,
-        "on_toggle_snap_to_grid_button" : freedomEditor.levelDisplay.on_toggle_snap_to_grid_button
+        "on_toggle_snap_to_grid_button" : freedomEditor.on_toggle_snap_to_grid_button
     }
 
     builder.connect_signals(callbacks)
