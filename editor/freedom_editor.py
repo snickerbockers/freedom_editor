@@ -55,8 +55,8 @@ class FreedomEditor:
             self.set_frame(DEFAULT_FRAME)
         except IOError as err:
             self.project_path = None
-            dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO,
-                                       Gtk.ButtonsType.OK,
+            dialog = Gtk.MessageDialog(self.main_window, 0,
+                                       Gtk.MessageType.INFO, Gtk.ButtonsType.OK,
                                        "Invalid project path")
             dialog.run()
             dialog.hide()
