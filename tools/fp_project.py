@@ -14,7 +14,8 @@ usage_string = """\
 %s launch <path to project>
 %s build [--assets-only|--engine-only] <path to project>
 %s render <path to project>
-""" % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
+%s revert <path to project> -a|--all --frame|-f <frame_number> ...
+""" % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
 
 def create_project(project_name, project_path, game_path, n_jobs = 1):
     """
@@ -87,6 +88,11 @@ def create_project(project_name, project_path, game_path, n_jobs = 1):
     sys.stdout.flush()
     dump_frames_linux_64.dump_all_levels(path_to_inst_chowdren, raw_level_dir,
                                          n_jobs = n_jobs)
+
+    bkup_lvl_dir = os.path.join(bkup_dir, "levels")
+    shutil.copytree(src = raw_level_dir, dst = bkup_lvl_dir)
+    for filename in os.listdir(bkup_lvl_dir):
+        os.chmod(os.path.join(bkup_lvl_dir, filename), 0444)
 
 def cmd_create():
     install_dir = None
@@ -181,6 +187,70 @@ def cmd_render():
                                       frame_no = frame_no,
                                       img_path = img_path)
 
+def revert_frame(proj_path, frame_no):
+    """
+    Undo all changes to the given frame by copying over its .lvl file from
+    the bkup directory.
+    """
+    frame_path = os.path.join(proj_path, "levels", "%d.lvl" % frame_no)
+    frame_bkup_path = os.path.join(proj_path, "bkup", "levels", "%d.lvl" % frame_no)
+
+    shutil.copy2(frame_bkup_path, frame_path)
+    os.chmod(frame_path, 0644)
+
+def cmd_revert():
+    """
+    undo changes to .lvl files by copying over the originals from the bkup
+    directory.
+
+    the --frame|-f parameter tells which frame to revert.  It can be specified
+    more than once to revert more than one frames.  --all can be used to revert
+    every frame.
+    """
+    params = sys.argv[1:]
+
+    all_flag = False
+    frames = []
+
+    try:
+        opt_val, params = gnu_getopt(sys.argv[1:], "f:a", \
+                             ["frame=", "all"])
+        for option, value in opt_val:
+            if option == "-a" or option == "--all":
+                all_flag = True
+            elif option == "-f" or option == "--frame":
+                frames.append(int(value))
+    except GetoptError:
+        print "%s" % usage_string
+        exit(1)
+
+    proj_path = params[1]
+
+    if all_flag:
+        if len(frames) == 0:
+            for frame_no in range(1, 88):
+                revert_frame(proj_path, frame_no)
+            sys.exit(0)
+        else:
+            print "Error: You cannot specify both the --frame and --all flags"
+            sys.exit(1)
+    else:
+        if len(frames) == 0:
+            # I don't consider this to be an error even though it is weird
+            print "Nothing done!"
+            sys.exit(0)
+
+        # validate frame numbers before trying anything
+        for frame_no in frames:
+            if frame_no < 1 or frame_no >= 88:
+                print "Error: %d is not a valid frame" % frame_no
+                sys.exit(1)
+
+        for frame_no in frames:
+            revert_frame(proj_path, frame_no)
+
+    sys.exit(0)
+
 if __name__ == "__main__":
     cmd = sys.argv[1]
 
@@ -192,6 +262,8 @@ if __name__ == "__main__":
         cmd_build()
     elif cmd == "render":
         cmd_render()
+    elif cmd == "revert":
+        cmd_revert()
     else:
         print "\"%s\" is not a recognized command" % cmd
         print "%s" % usage_string
