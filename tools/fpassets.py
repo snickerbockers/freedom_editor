@@ -51,7 +51,10 @@ pathname is the path to the directory to be extracted to/created from.
 extracting will exit with an error if pathname already exists.
 """ % sys.argv[0]
 
-def extract_glyph(assets_file, metrics_path, img_path):
+def do_log(msg):
+    print msg
+
+def extract_glyph(assets_file, metrics_path, img_path, log_fn = do_log):
     """
     reads in a glyph from assets_file and saves the metrics
     to a json and the glyph itself to a png.
@@ -83,7 +86,7 @@ def extract_glyph(assets_file, metrics_path, img_path):
         out_img = Image.frombytes("L", (w, h), raw_img)
         out_img.save(img_path)
 
-def extract_font(assets_file, cur_font_dir):
+def extract_font(assets_file, cur_font_dir, log_fn = do_log):
     """
     reads a font in from assets_file, saves the metrics to a json,
     and then calls read_glyph for each glyph in the font.
@@ -110,7 +113,7 @@ def extract_font(assets_file, cur_font_dir):
                                           "glyph_%d_metrics.json" % glyph_no)
         glyph_img_path = os.path.join(cur_font_dir, "glyph_%d.png" % glyph_no)
         extract_glyph(assets_file, metrics_path=glyph_metrics_path, \
-                      img_path=glyph_img_path)
+                      img_path=glyph_img_path, log_fn = log_fn)
 
 # Format of images in Assets.dat:
 #     width (16 bits)
@@ -120,7 +123,7 @@ def extract_font(assets_file, cur_font_dir):
 #     Truecolor RGBA quads compressed using the deflate/zlib format.
 #
 # These are all little-endian values.
-def extract_img(assets_file, out_img_path, out_meta_path):
+def extract_img(assets_file, out_img_path, out_meta_path, log_fn = do_log):
     """
     extract an image from assets_file.  The image will be saved in out_img_path
     and the metadata (excluding the image resolution) will be saved as text to
@@ -143,7 +146,7 @@ def extract_img(assets_file, out_img_path, out_meta_path):
     out_img = Image.frombytes("RGBA", (img_w, img_h), file_dat)
     out_img.save(os.path.join(img_dir, out_img_path))
 
-def extract_text(assets_file, out_file_path):
+def extract_text(assets_file, out_file_path, log_fn = do_log):
     """
     extract a text file from assets_file.
     out_file_path is the path to where the text should be saved.
@@ -155,7 +158,7 @@ def extract_text(assets_file, out_file_path):
     out_file = open(out_file_path,"w")
     out_file.write(file_dat)
 
-def init_paths(assets_dir_path):
+def init_paths(assets_dir_path, log_fn = do_log):
     """
     if you're importing fp-assets as a library and you're not calling
     extract_all_assets, you have to call this function before doing anything
@@ -172,7 +175,7 @@ def init_paths(assets_dir_path):
     preload_file_path = os.path.join(assets_dir_path, "preload_data.bin")
     type_sizes_path = os.path.join(assets_dir_path, "type_sizes.txt")
 
-def write_glyph(assets_file, img_path, metrics_path):
+def write_glyph(assets_file, img_path, metrics_path, log_fn = do_log):
     metrics_file = open(metrics_path, "r")
 
     metrics_data_map = json.loads(metrics_file.read())
@@ -198,7 +201,7 @@ def write_glyph(assets_file, img_path, metrics_path):
         img = Image.open(img_path)
         assets_file.write(img.tobytes())
 
-def write_font(assets_file, cur_font_dir):
+def write_font(assets_file, cur_font_dir, log_fn = do_log):
     font_meta_file = open(os.path.join(cur_font_dir, \
                                        "font_metrics.json"), "r")
     metrics_data_map = json.loads(font_meta_file.read())
@@ -215,10 +218,10 @@ def write_font(assets_file, cur_font_dir):
         metrics_path = os.path.join(cur_font_dir, \
                                     "glyph_%d_metrics.json" % glyph_no)
         img_path = os.path.join(cur_font_dir, "glyph_%d.png" % glyph_no)
-        write_glyph(assets_file, \
-                    metrics_path=metrics_path, img_path=img_path)
+        write_glyph(assets_file, metrics_path=metrics_path, img_path=img_path,
+                    log_fn = log_fn)
 
-def write_img(assets_file, img_path, meta_path):
+def write_img(assets_file, img_path, meta_path, log_fn = do_log):
     img = Image.open(img_path, "r")
     img_w, img_h = img.size
     data = zlib.compress(img.tobytes(), 9)
@@ -234,7 +237,7 @@ def write_img(assets_file, img_path, meta_path):
     assets_file.write(struct.pack("<I", len(data)))
     assets_file.write(data)
 
-def write_sound(assets_file, sound_path, meta_path):
+def write_sound(assets_file, sound_path, meta_path, log_fn = do_log):
     sound_meta_file = open(meta_path, "r")
     sound_meta_txt = sound_meta_file.read().splitlines()
     sound_meta_data = struct.pack("BBBB",
@@ -249,15 +252,15 @@ def write_sound(assets_file, sound_path, meta_path):
     assets_file.write(struct.pack("<I", len(sound_data)))
     assets_file.write(sound_data)
 
-def write_text(assets_file, text_file_path):
+def write_text(assets_file, text_file_path, log_fn = do_log):
     text_file = open(text_file_path, "r")
     text_data = text_file.read()
     text_len = struct.pack("<I", len(text_data))
     assets_file.write(text_len)
     assets_file.write(text_data)
 
-def write_assets_file(assets_file_path, assets_dir_path):
-    init_paths(assets_dir_path)
+def write_assets_file(assets_file_path, assets_dir_path, log_fn = do_log):
+    init_paths(assets_dir_path, log_fn = log_fn)
     assets_file = open(assets_file_path, "wb")
 
     preload_file = open(preload_file_path, "rb")
@@ -279,7 +282,8 @@ def write_assets_file(assets_file_path, assets_dir_path):
 
         write_img(assets_file, \
                   img_path=os.path.join(img_dir, "img_%d.png" % img_idx), \
-                  meta_path=os.path.join(img_dir, "img_%d_meta.txt" % img_idx))
+                  meta_path=os.path.join(img_dir, "img_%d_meta.txt" % img_idx),
+                  log_fn = log_fn)
 
     sound_offsets = []
     for sound_idx in range(SOUND_COUNT):
@@ -287,7 +291,8 @@ def write_assets_file(assets_file_path, assets_dir_path):
 
         sound_path = os.path.join(audio_dir, "audio_%d.ogg" % sound_idx)
         meta_path = os.path.join(audio_dir, "audio_%d_meta.txt" % sound_idx)
-        write_sound(assets_file, sound_path=sound_path, meta_path=meta_path)
+        write_sound(assets_file, sound_path=sound_path, meta_path=meta_path,
+                    log_fn = log_fn)
 
     font_offsets = []
     for font_idx in range(FONT_COUNT):
@@ -302,7 +307,7 @@ def write_assets_file(assets_file_path, assets_dir_path):
 
         for font_no in range(n_fonts):
             cur_font_dir = os.path.join(font_dir, "font_%d" % font_no)
-            write_font(assets_file, cur_font_dir=cur_font_dir)
+            write_font(assets_file, cur_font_dir=cur_font_dir, log_fn = log_fn)
 
     shader_offsets = []
     for shader_idx in range(SHADER_COUNT):
@@ -311,15 +316,15 @@ def write_assets_file(assets_file_path, assets_dir_path):
         vert_path = os.path.join(shader_dir, "shader_%d_vert.glsl" % shader_idx)
         frag_path = os.path.join(shader_dir, "shader_%d_frag.glsl" % shader_idx)
 
-        write_text(assets_file, text_file_path=vert_path)
-        write_text(assets_file, text_file_path=frag_path)
+        write_text(assets_file, text_file_path=vert_path, log_fn = log_fn)
+        write_text(assets_file, text_file_path=frag_path, log_fn = log_fn)
 
     file_offsets = []
     for file_idx in range(FILE_COUNT):
         file_offsets.append(assets_file.tell())
 
         file_path = os.path.join(file_dir, "file_%d.txt" % file_idx)
-        write_text(assets_file, text_file_path=file_path)
+        write_text(assets_file, text_file_path=file_path, log_fn = log_fn)
 
     # read in the type sizes
     type_sizes = []
@@ -335,12 +340,12 @@ def write_assets_file(assets_file_path, assets_dir_path):
                    shader_offsets + file_offsets + type_sizes):
         assets_file.write(struct.pack("<I", offset))
 
-def extract_all_assets(assets_file_path, assets_dir_path):
+def extract_all_assets(assets_file_path, assets_dir_path, log_fn = do_log):
     if os.path.exists(assets_dir_path):
-        print "Error: \"%s\" already exists" % assets_dir_path
+        log_fn("Error: \"%s\" already exists" % assets_dir_path)
         exit(1)
 
-    init_paths(assets_dir_path)
+    init_paths(assets_dir_path, log_fn = log_fn)
     assets_file = open(assets_file_path, "rb")
 
     os.mkdir(assets_dir_path, 0755)
@@ -401,8 +406,8 @@ def extract_all_assets(assets_file_path, assets_dir_path):
 
     for index, offset in enumerate(img_offsets):
         assets_file.seek(offset)
-        extract_img(assets_file, "img_%d.png" % index, \
-                    "img_%d_meta.txt" % index)
+        extract_img(assets_file, "img_%d.png" % index,
+                    "img_%d_meta.txt" % index, log_fn = log_fn)
 
     for index, offset in enumerate(sound_offsets):
         assets_file.seek(offset)
@@ -426,22 +431,26 @@ def extract_all_assets(assets_file_path, assets_dir_path):
         n_fonts = struct.unpack("<I", assets_file.read(4))[0]
 
         for font_no in range(n_fonts):
-            extract_font(assets_file, \
-                         os.path.join(font_dir, "font_%d" % font_no))
+            extract_font(assets_file,
+                         os.path.join(font_dir, "font_%d" % font_no),
+                         log_fn = log_fn)
 
     # next read in shaders.  These are just 4-byte lengths followed by text
     for index, offset in enumerate(shader_offsets):
         assets_file.seek(offset)
-        extract_text(assets_file, os.path.join(shader_dir, \
-                                               "shader_%d_vert.glsl" % index))
+        extract_text(assets_file, os.path.join(shader_dir,
+                                               "shader_%d_vert.glsl" % index),
+                     log_fn = log_fn)
         extract_text(assets_file, os.path.join(assets_dir_path, "shaders", \
-                                               "shader_%d_frag.glsl" % index))
+                                               "shader_%d_frag.glsl" % index),
+                     log_fn = log_fn)
 
     # next read in files.  These are just 4-byte lengths followed by text.
     for index, offset in enumerate(file_offsets):
         assets_file.seek(offset)
         extract_text(assets_file, os.path.join(assets_dir_path, "files", \
-                                               "file_%d.txt" % index))
+                                               "file_%d.txt" % index),
+                     log_fn = log_fn)
 if __name__ == "__main__":
     do_extract = False
     do_compress = False

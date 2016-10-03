@@ -11,9 +11,12 @@ r2 = None
 usage_string = "%s -i|--in <path-to-Chowdren> -o|--out <path-to-lvl-files>" % \
                sys.argv[0]
 
-def write_frame(frame_no, lvl_prefix):
+def do_log(msg):
+    print msg
+
+def write_frame(frame_no, lvl_prefix, log_fn = do_log):
     lvl_path = os.path.join(lvl_prefix, "%d.lvl" % frame_no)
-    print "writing frame %d from %s..." % (frame_no, lvl_path)
+    log_fn("writing frame %d from %s..." % (frame_no, lvl_path))
     sys.stdout.flush()
     lvl_frame = json.load(fp = open(lvl_path, "r"))
 
@@ -39,7 +42,7 @@ def write_frame(frame_no, lvl_prefix):
         r2.cmd("s+ 1")
         r2.cmd("wv4 %d" % obj["pos_y"])
 
-def write_all_frames(source_dir, engine_path):
+def write_all_frames(source_dir, engine_path, log_fn = do_log):
     global r2
 
     r2 = r2pipe.open(engine_path)

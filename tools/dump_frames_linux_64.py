@@ -33,6 +33,9 @@ call_create_func = re.compile("call sym\.create_([a-zA-Z0-9]+_[0-9]+)")
 set_width_re = re.compile("mov dword \[rdi \+ 8\], (0x[0-9a-fA-f]+)")
 set_height_re = re.compile("mov dword \[rdi \+ 0x10\], (0x[0-9a-fA-f]+)")
 
+def do_log(msg):
+    print msg
+
 class FpObjClass:
     def __init__(self, name, func, func_len, vaddr, paddr):
         self.name = name
@@ -47,7 +50,7 @@ class FpObjClass:
                                        self.vaddr,
                                        self.paddr)
 
-def list_object_classes(r2):
+def list_object_classes(r2, log_fn = do_log):
     """
     iterate throught the elf symbols and come up with a map
     of all object classes and the addresses and names of the functions
@@ -74,7 +77,7 @@ def list_object_classes(r2):
         obj_classes[class_name] = obj_class
     return obj_classes
 
-def find_first_image(r2, obj_class):
+def find_first_image(r2, obj_class, log_fn = do_log):
     """
     seeks to the create function and returns the image id sent to
     the first get_internal_image call.  This will return None if
@@ -98,14 +101,14 @@ def find_first_image(r2, obj_class):
             img_id = re_match.group(1)
         elif inst == "call sym.get_internal_image":
             if img_id is None:
-                print "ERROR: Unable to find get_internal_image parameter " + \
-                    "in %s" % obj_class.func
+                log_fn("ERROR: Unable to find get_internal_image parameter " + \
+                       "in %s" % obj_class.func)
             else:
                 return int(img_id, 16)
         r2.cmd("so 1")
     return None
 
-def parse_frame(r2, frame_no):
+def parse_frame(r2, frame_no, log_fn = do_log):
     """
     seek to the given frame and return a list of all the objects it
     instantiates.  Eventually this will get the coordinates, too.
@@ -130,7 +133,7 @@ def parse_frame(r2, frame_no):
     last_y_val_addr = None
 
     objs = []
-    obj_classes = list_object_classes(r2)
+    obj_classes = list_object_classes(r2, log_fn = do_log)
 
     while int(r2.cmd("s"), 16) < end_address:
         inst = r2.cmd("pi 1")
@@ -176,7 +179,7 @@ def parse_frame(r2, frame_no):
         r2.cmd("so 1")
 
     for idx, obj in enumerate(objs):
-        img_id = find_first_image(r2, obj_classes[obj['obj_class']])
+        img_id = find_first_image(r2, obj_classes[obj['obj_class']], log_fn = log_fn)
         if img_id is not None:
             objs[idx]['image'] = img_id;
 
@@ -196,19 +199,20 @@ def parse_frame(r2, frame_no):
             "objects" : objs,
             "error" : frame_error}
 
-def do_dump_levels(engine_path, out_dir, n_jobs = 1, start_idx = 1):
+def do_dump_levels(engine_path, out_dir, n_jobs = 1, start_idx = 1,
+                   log_fn = do_log):
     r2 = r2pipe.open(engine_path)
 
     for frame_no in range(start_idx, 88, n_jobs):
         lvl_path = os.path.join(out_dir, "%d.lvl" % frame_no)
-        print "dumping frame %d to %s..." % (frame_no, lvl_path)
+        log_fn("dumping frame %d to %s..." % (frame_no, lvl_path))
         sys.stdout.flush()
 
-        frame = parse_frame(r2, frame_no)
+        frame = parse_frame(r2, frame_no, log_fn = log_fn)
         json.dump(obj=frame, fp = open(lvl_path, "w"), indent=4)
     r2.quit()
 
-def dump_all_levels(engine_path, out_dir, n_jobs = 1):
+def dump_all_levels(engine_path, out_dir, n_jobs = 1, log_fn = do_log):
     """
     launch a bunch of threads that all call do_dump_levels
     """
@@ -217,7 +221,7 @@ def dump_all_levels(engine_path, out_dir, n_jobs = 1):
     thread_list = []
     for i in range(n_jobs):
         t = threading.Thread(target = do_dump_levels,
-                             args = (engine_path, out_dir, n_jobs, i + 1))
+                             args = (engine_path, out_dir, n_jobs, i + 1, log_fn))
         t.start()
         thread_list.append(t)
 

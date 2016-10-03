@@ -17,7 +17,11 @@ usage_string = """\
 %s revert <path to project> -a|--all --frame|-f <frame_number> ...
 """ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
 
-def create_project(project_name, project_path, game_path, n_jobs = 1):
+def do_log(msg):
+    print msg
+
+def create_project(project_name, project_path, game_path, n_jobs = 1,
+                   log_fn = do_log):
     """
     creates a project which is a hierarchy of directories including
     a copy of the game and the dumped assets and levels.
@@ -31,7 +35,7 @@ def create_project(project_name, project_path, game_path, n_jobs = 1):
     if not os.path.exists(project_path):
         os.mkdir(project_path)
 
-    print "Copying game installation..."
+    log_fn("Copying game installation...")
     sys.stdout.flush()
 
     # the inst directory contains a copy of your installation of the game
@@ -79,22 +83,22 @@ def create_project(project_name, project_path, game_path, n_jobs = 1):
     # parallel to the dump_all_levels call, but since multithreading has
     # proven itself to be counterproductive in this instance it doesn't
     # really matter.
-    print "Dumping Assets..."
+    log_fn("Dumping Assets...")
     sys.stdout.flush()
-    fpassets.extract_all_assets(path_to_inst_assets, raw_assets_dir)
+    fpassets.extract_all_assets(path_to_inst_assets, raw_assets_dir, log_fn = log_fn)
 
     # next dump the level data
-    print "Dumping level data..."
+    log_fn("Dumping level data...")
     sys.stdout.flush()
     dump_frames_linux_64.dump_all_levels(path_to_inst_chowdren, raw_level_dir,
-                                         n_jobs = n_jobs)
+                                         n_jobs = n_jobs, log_fn = log_fn)
 
     bkup_lvl_dir = os.path.join(bkup_dir, "levels")
     shutil.copytree(src = raw_level_dir, dst = bkup_lvl_dir)
     for filename in os.listdir(bkup_lvl_dir):
         os.chmod(os.path.join(bkup_lvl_dir, filename), 0444)
 
-def cmd_create():
+def cmd_create(log_fn = do_log):
     install_dir = None
     n_jobs = 1
 
@@ -106,18 +110,18 @@ def cmd_create():
             elif option == "-j" or option == "--jobs":
                 n_jobs = int(value)
     except GetoptError:
-        print "%s" % usage_string
+        log_fn("%s" % usage_string)
         exit(1)
 
     if install_dir is None or len(params) < 1:
-        print "%s" % usage_string
+        log_fn("%s" % usage_string)
         exit(1)
 
     create_project(project_path = params[1],
                    project_name = os.path.basename(params[1]),
-                   game_path = install_dir, n_jobs = n_jobs)
+                   game_path = install_dir, n_jobs = n_jobs, log_fn = log_fn)
 
-def launch_project(project_path, block=True):
+def launch_project(project_path, block=True, log_fn = do_log):
     game_dir = os.path.join(project_path, "inst")
     os.chdir(game_dir)
 
@@ -127,28 +131,29 @@ def launch_project(project_path, block=True):
     else:
         subprocess.Popen(cmd)
 
-def cmd_launch():
+def cmd_launch(log_fn = do_log):
     params = sys.argv[1:]
 
-    launch_project(project_path = params[1])
+    launch_project(project_path = params[1], log_fn = log_fn)
 
-def build_project_engine(project_path):
+def build_project_engine(project_path, log_fn = do_log):
     source_dir = os.path.join(project_path, "levels")
     engine_path = os.path.join(project_path, "inst", "bin64", "Chowdren")
 
-    print "rebuilding levels..."
+    log_fn("rebuilding levels...")
     sys.stdout.flush()
     write_frames_linux_64.write_all_frames(source_dir = source_dir,
-                                           engine_path = engine_path)
+                                           engine_path = engine_path,
+                                           log_fn = log_fn)
 
-def build_project_assets(project_path):
-    print "rebuilding Assets.dat..."
+def build_project_assets(project_path, log_fn = do_log):
+    log_fn("rebuilding Assets.dat...")
     sys.stdout.flush()
     assets_file = os.path.join(project_path, "inst", "Assets.dat")
     assets_dir = os.path.join(project_path, "assets")
     fpassets.write_assets_file(assets_file, assets_dir)
 
-def cmd_build():
+def cmd_build(log_fn = do_log):
     build_assets_only = False
     build_engine_only = False
 
@@ -161,7 +166,7 @@ def cmd_build():
             elif option == "--engine-only":
                 build_engine_only = True
     except GetoptError:
-        print "%s" % usage_string
+        log_fn("%s" % usage_string)
         exit(1)
 
     if build_engine_only and build_assets_only:
@@ -169,12 +174,12 @@ def cmd_build():
                         "AND --engine-only")
 
     if not build_assets_only:
-        build_project_engine(params[1])
+        build_project_engine(params[1], log_fn = log_fn)
 
     if not build_engine_only:
-        build_project_assets(params[1])
+        build_project_assets(params[1], log_fn = log_fn)
 
-def cmd_render():
+def cmd_render(log_fn = do_log):
     params = sys.argv[1:]
 
     img_dir = os.path.join(params[1], "renders")
@@ -187,7 +192,7 @@ def cmd_render():
                                       frame_no = frame_no,
                                       img_path = img_path)
 
-def revert_frame(proj_path, frame_no):
+def revert_frame(proj_path, frame_no, log_fn = do_log):
     """
     Undo all changes to the given frame by copying over its .lvl file from
     the bkup directory.
@@ -198,7 +203,7 @@ def revert_frame(proj_path, frame_no):
     shutil.copy2(frame_bkup_path, frame_path)
     os.chmod(frame_path, 0644)
 
-def cmd_revert():
+def cmd_revert(log_fn = do_log):
     """
     undo changes to .lvl files by copying over the originals from the bkup
     directory.
@@ -221,7 +226,7 @@ def cmd_revert():
             elif option == "-f" or option == "--frame":
                 frames.append(int(value))
     except GetoptError:
-        print "%s" % usage_string
+        log_fn("%s" % usage_string)
         exit(1)
 
     proj_path = params[1]
@@ -229,25 +234,25 @@ def cmd_revert():
     if all_flag:
         if len(frames) == 0:
             for frame_no in range(1, 88):
-                revert_frame(proj_path, frame_no)
+                revert_frame(proj_path, frame_no, log_fn = log_fn)
             sys.exit(0)
         else:
-            print "Error: You cannot specify both the --frame and --all flags"
+            log_fn("Error: You cannot specify both the --frame and --all flags")
             sys.exit(1)
     else:
         if len(frames) == 0:
             # I don't consider this to be an error even though it is weird
-            print "Nothing done!"
+            log_fn("Nothing done!")
             sys.exit(0)
 
         # validate frame numbers before trying anything
         for frame_no in frames:
             if frame_no < 1 or frame_no >= 88:
-                print "Error: %d is not a valid frame" % frame_no
+                log_fn("Error: %d is not a valid frame" % frame_no)
                 sys.exit(1)
 
         for frame_no in frames:
-            revert_frame(proj_path, frame_no)
+            revert_frame(proj_path, frame_no, log_fn = log_fn)
 
     sys.exit(0)
 
@@ -265,6 +270,6 @@ if __name__ == "__main__":
     elif cmd == "revert":
         cmd_revert()
     else:
-        print "\"%s\" is not a recognized command" % cmd
-        print "%s" % usage_string
+        do_log("\"%s\" is not a recognized command" % cmd)
+        do_log("%s" % usage_string)
         exit(1)
