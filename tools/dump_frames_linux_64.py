@@ -212,9 +212,14 @@ def do_dump_levels(engine_path, out_dir, n_jobs = 1, start_idx = 1,
         json.dump(obj=frame, fp = open(lvl_path, "w"), indent=4)
     r2.quit()
 
-def dump_all_levels(engine_path, out_dir, n_jobs = 1, log_fn = do_log):
+def dump_all_levels(engine_path, out_dir, n_jobs = 1, log_fn = do_log,
+                    join_threads = True):
     """
-    launch a bunch of threads that all call do_dump_levels
+    launch a bunch of threads that all call do_dump_levels.
+    If join_threads is False, this function will not wait until the levels have
+    been dumped to return.
+
+    returns a list of all active_threads
     """
     os.mkdir(out_dir)
 
@@ -225,8 +230,12 @@ def dump_all_levels(engine_path, out_dir, n_jobs = 1, log_fn = do_log):
         t.start()
         thread_list.append(t)
 
-    for t in thread_list:
-        t.join()
+    if join_threads:
+        for t in thread_list:
+            t.join()
+        return []
+    else:
+        return thread_list
 
 if __name__ == "__main__":
     engine_path = "Chowdren"

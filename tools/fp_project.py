@@ -8,6 +8,7 @@ import fpassets
 import dump_frames_linux_64
 import write_frames_linux_64
 import fp_render
+import threading
 
 usage_string = """\
 %s create -i|--install-dir <path to game installation> <path to project>
@@ -21,11 +22,14 @@ def do_log(msg):
     print msg
 
 def create_project(project_name, project_path, game_path, n_jobs = 1,
-                   log_fn = do_log):
+                   log_fn = do_log, join_threads = True):
     """
     creates a project which is a hierarchy of directories including
     a copy of the game and the dumped assets and levels.
+
+    Returns a list of all active threads.
     """
+    active_threads = []
 
     # allow users to provide a path to an empty directory because the dialog
     # used by the editor will create the directory
@@ -85,18 +89,30 @@ def create_project(project_name, project_path, game_path, n_jobs = 1,
     # really matter.
     log_fn("Dumping Assets...")
     sys.stdout.flush()
-    fpassets.extract_all_assets(path_to_inst_assets, raw_assets_dir, log_fn = log_fn)
+    assets_thread = threading.Thread(target = fpassets.extract_all_assets,
+                                     args=(path_to_inst_assets,
+                                           raw_assets_dir,
+                                           log_fn))
+    assets_thread.start()
 
     # next dump the level data
     log_fn("Dumping level data...")
     sys.stdout.flush()
-    dump_frames_linux_64.dump_all_levels(path_to_inst_chowdren, raw_level_dir,
-                                         n_jobs = n_jobs, log_fn = log_fn)
+    active_threads += dump_frames_linux_64.dump_all_levels(path_to_inst_chowdren, raw_level_dir,
+                                                           n_jobs = n_jobs, log_fn = log_fn,
+                                                           join_threads = join_threads)
 
     bkup_lvl_dir = os.path.join(bkup_dir, "levels")
     shutil.copytree(src = raw_level_dir, dst = bkup_lvl_dir)
     for filename in os.listdir(bkup_lvl_dir):
         os.chmod(os.path.join(bkup_lvl_dir, filename), 0444)
+
+    if join_threads:
+        assets_thread.join()
+    else:
+        active_threads.append(assets_thread)
+
+    return active_threads
 
 def cmd_create(log_fn = do_log):
     install_dir = None
@@ -136,22 +152,35 @@ def cmd_launch(log_fn = do_log):
 
     launch_project(project_path = params[1], log_fn = log_fn)
 
-def build_project_engine(project_path, log_fn = do_log):
+def build_project_engine(project_path, log_fn = do_log, join_threads = True):
     source_dir = os.path.join(project_path, "levels")
     engine_path = os.path.join(project_path, "inst", "bin64", "Chowdren")
 
     log_fn("rebuilding levels...")
     sys.stdout.flush()
-    write_frames_linux_64.write_all_frames(source_dir = source_dir,
-                                           engine_path = engine_path,
-                                           log_fn = log_fn)
+    td = threading.Thread(target = write_frames_linux_64.write_all_frames,
+                          args = (source_dir, engine_path, log_fn))
+    td.start()
 
-def build_project_assets(project_path, log_fn = do_log):
+    if join_threads:
+        td.join()
+        return []
+
+    return [td]
+
+def build_project_assets(project_path, log_fn = do_log, join_threads = True):
     log_fn("rebuilding Assets.dat...")
     sys.stdout.flush()
     assets_file = os.path.join(project_path, "inst", "Assets.dat")
     assets_dir = os.path.join(project_path, "assets")
-    fpassets.write_assets_file(assets_file, assets_dir)
+    td = threading.Thread(target = fpassets.write_assets_file,
+                          args = (assets_file, assets_dir, log_fn))
+    td.start()
+
+    if join_threads:
+        td.join()
+        return []
+    return [td]
 
 def cmd_build(log_fn = do_log):
     build_assets_only = False

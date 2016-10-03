@@ -46,26 +46,24 @@ class ProjectMenu:
             self.progress_dialog.set_transient_for(self.main_window)
             self.progress_dialog.show_all()
 
-            self.fp_proj_sub = subprocess.Popen(["../tools/fp_project.py",
-                                                 "create", "-i", game_path,
-                                                 proj_path],
-                                                stdout = subprocess.PIPE)
-            GLib.io_add_watch(self.fp_proj_sub.stdout,
-                              GLib.IO_IN,
-                              self.update_progress_dialog,
-                              priority = GLib.PRIORITY_HIGH)
-            GLib.idle_add(self.check_up_on_fp_proj_sub)
+            idle_threads = fp_project.create_project(project_name = os.path.basename(proj_path),
+                                                     project_path = proj_path,
+                                                     game_path = game_path,
+                                                     n_jobs = 1,
+                                                     log_fn = self.update_progress_dialog,
+                                                     join_threads = False)
+            GLib.idle_add(self.check_up_on_fp_proj_threads, idle_threads)
             self.progress_dialog.run()
             self.progress_dialog.hide()
 
             self.freedomEditor.load_project(proj_path)
 
-    def check_up_on_fp_proj_sub(self):
-        self.fp_proj_sub.poll()
-        if self.fp_proj_sub.returncode is not None:
-            self.progress_dialog_ok_button.set_sensitive(True)
-            return False
-        return True
+    def check_up_on_fp_proj_threads(self, idle_threads):
+        for td in idle_threads:
+            if td.is_alive():
+                return True
+        self.progress_dialog_ok_button.set_sensitive(True)
+        return False
 
     def clear_progress_dialog(self):
         """
@@ -73,24 +71,9 @@ class ProjectMenu:
         """
         self.progress_dialog_textview.get_buffer().set_text("")
 
-    def update_progress_dialog(self, fd, condition):
-        if condition == GLib.IO_IN:
-            buf = self.progress_dialog_textview.get_buffer()
-
-            # XXX: since this isn't quite atomic, a compulsive clicker might be
-            # able to fuck this up (but only a little since it prints one char
-            # at a time)
-            end_iter = buf.get_end_iter()
-            buf.place_cursor(end_iter)
-            buf.insert_at_cursor(fd.read(1))
-
-            # FIXME: This is supposed to make it scroll to the end,
-            #        but it doesn't do that
-            end_iter = buf.get_end_iter()
-            self.progress_dialog_textview.scroll_to_iter(end_iter,
-                                                         0.0, False, 0, 1.0)
-            return True
-        return False
+    def update_progress_dialog(self, txt):
+        buf = self.progress_dialog_textview.get_buffer()
+        buf.insert(buf.get_end_iter(), "%s\n" % txt)
 
     def on_project_build(self, *args):
         """
@@ -105,14 +88,13 @@ class ProjectMenu:
         self.progress_dialog.set_transient_for(self.main_window)
         self.progress_dialog.show_all()
 
-        self.fp_proj_sub = subprocess.Popen(["../tools/fp_project.py",
-                                             "build", proj_path],
-                                            stdout = subprocess.PIPE)
-        GLib.io_add_watch(self.fp_proj_sub.stdout,
-                          GLib.IO_IN,
-                          self.update_progress_dialog,
-                          priority = GLib.PRIORITY_HIGH)
-        GLib.idle_add(self.check_up_on_fp_proj_sub)
+        engine_threads = fp_project.build_project_engine(project_path = proj_path,
+                                                         log_fn = self.update_progress_dialog,
+                                                         join_threads = False)
+        assets_threads = fp_project.build_project_assets(project_path = proj_path,
+                                                         log_fn = self.update_progress_dialog,
+                                                         join_threads = False)
+        GLib.idle_add(self.check_up_on_fp_proj_threads, engine_threads + assets_threads)
         self.progress_dialog.run()
         self.progress_dialog.hide()
         self.freedomEditor.project_path = proj_path

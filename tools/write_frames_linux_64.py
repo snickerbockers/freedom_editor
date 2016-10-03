@@ -50,7 +50,7 @@ def write_all_frames(source_dir, engine_path, log_fn = do_log):
 
     for frame_no in range(1, 88):
         lvl_path = os.path.join(source_dir, "%d.lvl" % frame_no)
-        write_frame(frame_no, source_dir)
+        write_frame(frame_no, source_dir, log_fn = log_fn)
 
 if __name__ == "__main__":
     engine_path = "Chowdren"
