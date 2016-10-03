@@ -40,7 +40,6 @@ def create_project(project_name, project_path, game_path, n_jobs = 1,
         os.mkdir(project_path)
 
     log_fn("Copying game installation...")
-    sys.stdout.flush()
 
     # the inst directory contains a copy of your installation of the game
     inst_path = os.path.join(project_path, "inst")
@@ -88,7 +87,6 @@ def create_project(project_name, project_path, game_path, n_jobs = 1,
     # proven itself to be counterproductive in this instance it doesn't
     # really matter.
     log_fn("Dumping Assets...")
-    sys.stdout.flush()
     assets_thread = threading.Thread(target = fpassets.extract_all_assets,
                                      args=(path_to_inst_assets,
                                            raw_assets_dir,
@@ -97,7 +95,6 @@ def create_project(project_name, project_path, game_path, n_jobs = 1,
 
     # next dump the level data
     log_fn("Dumping level data...")
-    sys.stdout.flush()
     active_threads += dump_frames_linux_64.dump_all_levels(path_to_inst_chowdren, raw_level_dir,
                                                            n_jobs = n_jobs, log_fn = log_fn,
                                                            join_threads = join_threads)
@@ -157,7 +154,6 @@ def build_project_engine(project_path, log_fn = do_log, join_threads = True):
     engine_path = os.path.join(project_path, "inst", "bin64", "Chowdren")
 
     log_fn("rebuilding levels...")
-    sys.stdout.flush()
     td = threading.Thread(target = write_frames_linux_64.write_all_frames,
                           args = (source_dir, engine_path, log_fn))
     td.start()
@@ -170,7 +166,6 @@ def build_project_engine(project_path, log_fn = do_log, join_threads = True):
 
 def build_project_assets(project_path, log_fn = do_log, join_threads = True):
     log_fn("rebuilding Assets.dat...")
-    sys.stdout.flush()
     assets_file = os.path.join(project_path, "inst", "Assets.dat")
     assets_dir = os.path.join(project_path, "assets")
     td = threading.Thread(target = fpassets.write_assets_file,

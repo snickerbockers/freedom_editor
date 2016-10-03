@@ -17,7 +17,6 @@ def do_log(msg):
 def write_frame(frame_no, lvl_prefix, log_fn = do_log):
     lvl_path = os.path.join(lvl_prefix, "%d.lvl" % frame_no)
     log_fn("writing frame %d from %s..." % (frame_no, lvl_path))
-    sys.stdout.flush()
     lvl_frame = json.load(fp = open(lvl_path, "r"))
 
     # write frame width and height if they were obtained error-free.
