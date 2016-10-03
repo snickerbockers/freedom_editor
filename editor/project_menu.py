@@ -71,9 +71,12 @@ class ProjectMenu:
         """
         self.progress_dialog_textview.get_buffer().set_text("")
 
-    def update_progress_dialog(self, txt):
+    def actually_update_progress_dialog(self, txt):
         buf = self.progress_dialog_textview.get_buffer()
         buf.insert(buf.get_end_iter(), "%s\n" % txt)
+
+    def update_progress_dialog(self, txt):
+        GLib.idle_add(self.actually_update_progress_dialog, txt)
 
     def on_project_build(self, *args):
         """
