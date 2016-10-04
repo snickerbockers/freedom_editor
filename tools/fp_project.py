@@ -4,7 +4,7 @@ import sys
 import shutil
 from getopt import gnu_getopt, GetoptError
 import subprocess
-import fpassets
+import fp_assets
 import dump_frames_linux_64
 import write_frames_linux_64
 import fp_render
@@ -87,7 +87,7 @@ def create_project(project_name, project_path, game_path, n_jobs = 1,
     # proven itself to be counterproductive in this instance it doesn't
     # really matter.
     log_fn("Dumping Assets...")
-    assets_thread = threading.Thread(target = fpassets.extract_all_assets,
+    assets_thread = threading.Thread(target = fp_assets.extract_all_assets,
                                      args=(path_to_inst_assets,
                                            raw_assets_dir,
                                            log_fn))
@@ -197,7 +197,7 @@ def build_project_assets(project_path, log_fn = do_log, join_threads = True):
     log_fn("rebuilding Assets.dat...")
     assets_file = os.path.join(project_path, "inst", "Assets.dat")
     assets_dir = os.path.join(project_path, "assets")
-    td = threading.Thread(target = fpassets.write_assets_file,
+    td = threading.Thread(target = fp_assets.write_assets_file,
                           args = (assets_file, assets_dir, log_fn))
     td.start()
 
