@@ -13,7 +13,7 @@ import threading
 usage_string = """\
 %s create -i|--install-dir <path to game installation> <path to project>
 %s launch <path to project>
-%s build [--assets-only|--engine-only] <path to project>
+%s build [--assets-only|--engine-only] [--frame|-f <frame_number>] [--new-frames-only] <path to project>
 %s render <path to project>
 %s revert <path to project> -a|--all --frame|-f <frame_number> ...
 """ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
@@ -149,13 +149,42 @@ def cmd_launch(log_fn = do_log):
 
     launch_project(project_path = params[1], log_fn = log_fn)
 
-def build_project_engine(project_path, log_fn = do_log, join_threads = True):
+def frame_has_changed(project_path, frame_no):
+    """
+    returns True if the given frame has been changed (ie the copy in levels
+    does not match the copy in bkup/levels
+    """
+    frame_file_name = "%d.lvl" % frame_no
+    edited_file_path = os.path.join(project_path, "levels", frame_file_name)
+    bkup_file_path = os.path.join(project_path, "bkup",
+                                  "levels", frame_file_name)
+    edited_file = open(edited_file_path)
+    bkup_file = open(bkup_file_path)
+
+    return edited_file.read() != bkup_file.read()
+
+def build_project_engine(project_path, log_fn = do_log,
+                         frame_list = None, new_frames_only = False,
+                         join_threads = True):
     source_dir = os.path.join(project_path, "levels")
     engine_path = os.path.join(project_path, "inst", "bin64", "Chowdren")
 
+    if new_frames_only:
+        if frame_list is not None:
+            raise ValueError("You cannot set new_frames_only AND give " + \
+                             "me a specific list of frames!")
+        else:
+            # find the frames which have changed
+            frame_list = []
+            for frame_no in range(1, 88):
+                if frame_has_changed(project_path, frame_no):
+                    frame_list.append(frame_no)
+    elif frame_list is None:
+        frame_list = range(1, 88)
+
     log_fn("rebuilding levels...")
-    td = threading.Thread(target = write_frames_linux_64.write_all_frames,
-                          args = (source_dir, engine_path, log_fn))
+    td = threading.Thread(target = write_frames_linux_64.write_frames,
+                          args = (source_dir, engine_path, frame_list, log_fn))
     td.start()
 
     if join_threads:
@@ -180,15 +209,24 @@ def build_project_assets(project_path, log_fn = do_log, join_threads = True):
 def cmd_build(log_fn = do_log):
     build_assets_only = False
     build_engine_only = False
+    new_frames_only = False
+    have_frame_list = False
 
+    frame_list = []
     try:
-        opt_val, params = gnu_getopt(sys.argv[1:], "", \
-                             ["assets-only", "engine-only"])
+        opt_val, params = gnu_getopt(sys.argv[1:], "f:", \
+                             ["frame=", "assets-only", "engine-only",
+                              "new-frames-only"])
         for option, value in opt_val:
+            if option == "-f" or option == "--frame":
+                frame_list.append(int(value))
+                have_frame_list = True
             if option == "--assets-only":
                 build_assets_only = True
             elif option == "--engine-only":
                 build_engine_only = True
+            elif option == "--new-frames-only":
+                new_frames_only = True
     except GetoptError:
         log_fn("%s" % usage_string)
         exit(1)
@@ -198,7 +236,10 @@ def cmd_build(log_fn = do_log):
                         "AND --engine-only")
 
     if not build_assets_only:
-        build_project_engine(params[1], log_fn = log_fn)
+        if not have_frame_list:
+            frame_list = None
+        build_project_engine(params[1], frame_list = frame_list,
+                             new_frames_only = new_frames_only, log_fn = log_fn)
 
     if not build_engine_only:
         build_project_assets(params[1], log_fn = log_fn)
