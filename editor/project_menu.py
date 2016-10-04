@@ -78,10 +78,19 @@ class ProjectMenu:
     def update_progress_dialog(self, txt):
         GLib.idle_add(self.actually_update_progress_dialog, txt)
 
-    def on_project_build(self, *args):
+    def on_project_build_everything(self, *args):
         """
-        Called when the user clicks Project=>Build.
+        Called when the user clicks "Project=>Build Everything".
         """
+        self.on_project_build(only_new = False)
+
+    def on_project_build_changes(self, *args):
+        """
+        Called when the user clicks "Project=>Build Changes".
+        """
+        self.on_project_build(only_new = True)
+
+    def on_project_build(self, only_new):
         proj_path = self.freedomEditor.project_path
 
         if proj_path is None:
@@ -93,7 +102,8 @@ class ProjectMenu:
 
         engine_threads = fp_project.build_project_engine(project_path = proj_path,
                                                          log_fn = self.update_progress_dialog,
-                                                         join_threads = False)
+                                                         join_threads = False,
+                                                         new_frames_only = only_new)
         assets_threads = fp_project.build_project_assets(project_path = proj_path,
                                                          log_fn = self.update_progress_dialog,
                                                          join_threads = False)
@@ -101,6 +111,7 @@ class ProjectMenu:
         self.progress_dialog.run()
         self.progress_dialog.hide()
         self.freedomEditor.project_path = proj_path
+
 
     def on_new_project_game_path_browse(self, *args):
         """
