@@ -67,9 +67,11 @@ class ProjectMenu:
 
     def clear_progress_dialog(self):
         """
-        deletes all the text from the progress_dialog_textview
+        Call this every time you're about to show the progress_dialog to make
+        sure it is in a pristine state.
         """
         self.progress_dialog_textview.get_buffer().set_text("")
+        self.progress_dialog_ok_button.set_sensitive(False)
 
     def actually_update_progress_dialog(self, txt):
         buf = self.progress_dialog_textview.get_buffer()
