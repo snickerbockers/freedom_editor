@@ -82,10 +82,6 @@ def create_project(project_name, project_path, game_path, n_jobs = 1,
     shutil.copy2(path_to_inst_chowdren, os.path.join(bkup_dir, "Chowdren"))
     shutil.copy2(path_to_inst_assets, os.path.join(bkup_dir, "Assets.dat"))
 
-    # next dump the assets.  Ideally this would happen in another thread
-    # parallel to the dump_all_levels call, but since multithreading has
-    # proven itself to be counterproductive in this instance it doesn't
-    # really matter.
     log_fn("Dumping Assets...")
     assets_thread = threading.Thread(target = fp_assets.extract_all_assets,
                                      args=(path_to_inst_assets,
