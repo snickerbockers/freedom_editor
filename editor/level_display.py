@@ -31,38 +31,37 @@ class LevelDisplay:
         """
         called when the user clicks on the level_display drawing area
         """
-        if self.mouse_state == STATE_NORM:
-            # XXX Gtk probably has constants for mouse buttons, I just don't know
-            #     what they are called.
-            if event.button == 1 or event.button == 3:
-                # left click
-                self.cursor_x_pos = event.x
-                self.cursor_y_pos = event.y
+        # XXX Gtk probably has constants for mouse buttons, I just don't know
+        #     what they are called.
+        if event.button == 1 or event.button == 3:
+            # left click
+            self.cursor_x_pos = event.x
+            self.cursor_y_pos = event.y
 
-            if event.button == 1:
-                self.mouse_state = STATE_PAN
-            elif event.button == 3:
-                self.mouse_state = STATE_DRAG_OBJ
+        if event.button == 1:
+            self.mouse_state |= STATE_PAN
+        elif event.button == 3:
+            self.mouse_state |= STATE_DRAG_OBJ
 
-                # need to find the object under the cursor.  This involves
-                # converting the window-coordinates to world-coordinates
-                world_cursor_x = self.cursor_x_pos - self.level_display_trans_x
-                world_cursor_y = self.cursor_y_pos - self.level_display_trans_y
+            # need to find the object under the cursor.  This involves
+            # converting the window-coordinates to world-coordinates
+            world_cursor_x = self.cursor_x_pos - self.level_display_trans_x
+            world_cursor_y = self.cursor_y_pos - self.level_display_trans_y
 
-                world_cursor = (world_cursor_x, world_cursor_y)
+            world_cursor = (world_cursor_x, world_cursor_y)
 
-                obj_idx = self.freedomEditor.get_object_at_pos(world_cursor)
+            obj_idx = self.freedomEditor.get_object_at_pos(world_cursor)
 
-                self.freedomEditor.select_object(obj_idx)
+            self.freedomEditor.select_object(obj_idx)
 
     def on_unclick(self, widget, event):
         """
         called when the user releases a previously held-down moust button.
         """
-        if self.mouse_state == STATE_PAN and event.button == 1:
-            self.mouse_state = STATE_NORM
-        elif self.mouse_state == STATE_DRAG_OBJ and event.button == 3:
-            self.mouse_state = STATE_NORM
+        if self.mouse_state & STATE_PAN and event.button == 1:
+            self.mouse_state &= ~STATE_PAN
+        elif self.mouse_state & STATE_DRAG_OBJ and event.button == 3:
+            self.mouse_state &= ~STATE_DRAG_OBJ
 
     def on_mouse_motion(self, widget, event):
         """
@@ -74,7 +73,7 @@ class LevelDisplay:
             rel_x = event.x - self.cursor_x_pos
             rel_y = event.y - self.cursor_y_pos
 
-        if self.mouse_state == STATE_PAN:
+        if self.mouse_state & STATE_PAN:
             self.cursor_x_pos = event.x
             self.cursor_y_pos = event.y
 
@@ -82,7 +81,7 @@ class LevelDisplay:
             self.level_display_trans_y += rel_y
 
             self.invalidate()
-        elif self.mouse_state == STATE_DRAG_OBJ:
+        elif self.mouse_state & STATE_DRAG_OBJ:
             self.cursor_x_pos = event.x
             self.cursor_y_pos = event.y
 
