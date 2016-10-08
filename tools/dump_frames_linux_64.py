@@ -37,12 +37,14 @@ def do_log(msg):
     print msg
 
 class FpObjClass:
-    def __init__(self, name, func, func_len, vaddr, paddr):
+    def __init__(self, name, func, func_len, vaddr, paddr, img_id):
         self.name = name
         self.func = func
         self.func_len = func_len
         self.vaddr = vaddr
         self.paddr = paddr
+
+        self.img_id = img_id
 
     def __str__(self):
         return "%s\t%s\t0x%x\t0x%x" % (self.name,
@@ -69,24 +71,27 @@ def list_object_classes(r2, log_fn = do_log):
             class_name = create_func[26:-2]
         else:
             class_name = create_func[7:]
+        img_id = find_first_image(r2 = r2, func = create_func,
+                                  func_len = func_len, log_fn = log_fn)
         obj_class = FpObjClass(name = class_name,
                                func = create_func,
                                vaddr = int(vaddr, 16),
                                paddr = int(paddr, 16),
-                               func_len = func_len)
+                               func_len = func_len,
+                               img_id = img_id)
         obj_classes[class_name] = obj_class
     return obj_classes
 
-def find_first_image(r2, obj_class, log_fn = do_log):
+def find_first_image(r2, func, func_len, log_fn = do_log):
     """
     seeks to the create function and returns the image id sent to
     the first get_internal_image call.  This will return None if
     it doesn't find an image id.
     """
 
-    r2.cmd("s sym.%s" % obj_class.func)
+    r2.cmd("s sym.%s" % func)
 
-    end_address = int(r2.cmd("s"), 16) + obj_class.func_len
+    end_address = int(r2.cmd("s"), 16) + func_len
     img_id = None
 
     # go forward and find the last mov into %edi before the first
@@ -102,13 +107,13 @@ def find_first_image(r2, obj_class, log_fn = do_log):
         elif inst == "call sym.get_internal_image":
             if img_id is None:
                 log_fn("ERROR: Unable to find get_internal_image parameter " + \
-                       "in %s" % obj_class.func)
+                       "in %s" % func)
             else:
                 return int(img_id, 16)
         r2.cmd("so 1")
     return None
 
-def parse_frame(r2, frame_no, log_fn = do_log):
+def parse_frame(r2, frame_no, obj_classes, log_fn = do_log):
     """
     seek to the given frame and return a list of all the objects it
     instantiates.  Eventually this will get the coordinates, too.
@@ -133,7 +138,6 @@ def parse_frame(r2, frame_no, log_fn = do_log):
     last_y_val_addr = None
 
     objs = []
-    obj_classes = list_object_classes(r2, log_fn = do_log)
 
     while int(r2.cmd("s"), 16) < end_address:
         inst = r2.cmd("pi 1")
@@ -179,7 +183,7 @@ def parse_frame(r2, frame_no, log_fn = do_log):
         r2.cmd("so 1")
 
     for idx, obj in enumerate(objs):
-        img_id = find_first_image(r2, obj_classes[obj['obj_class']], log_fn = log_fn)
+        img_id = obj_classes[obj['obj_class']].img_id
         if img_id is not None:
             objs[idx]['image'] = img_id;
 
@@ -203,11 +207,18 @@ def do_dump_levels(engine_path, out_dir, n_jobs = 1, start_idx = 1,
                    log_fn = do_log):
     r2 = r2pipe.open(engine_path)
 
+    # TODO: IF I ever get the multi-threading *really* working, then I'm going
+    # to want to move the call to list_object_classes up another level into the
+    # callee so that they can all share the same obj_classes list instead of
+    # having every thread call list_object_classes
+    obj_classes = list_object_classes(r2, log_fn = do_log)
+
     for frame_no in range(start_idx, 88, n_jobs):
         lvl_path = os.path.join(out_dir, "%d.lvl" % frame_no)
         log_fn("dumping frame %d to %s..." % (frame_no, lvl_path))
 
-        frame = parse_frame(r2, frame_no, log_fn = log_fn)
+        frame = parse_frame(r2, frame_no, obj_classes = obj_classes,
+                            log_fn = log_fn)
         json.dump(obj=frame, fp = open(lvl_path, "w"), indent=4)
     r2.quit()
 
