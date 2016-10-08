@@ -37,7 +37,7 @@ def do_log(msg):
     print msg
 
 class FpObjClass:
-    def __init__(self, name, func, func_len, vaddr, paddr, img_id):
+    def __init__(self, name, func, func_len, vaddr, paddr, img_id, all_img_ids):
         self.name = name
         self.func = func
         self.func_len = func_len
@@ -45,6 +45,7 @@ class FpObjClass:
         self.paddr = paddr
 
         self.img_id = img_id
+        self.all_img_ids = all_img_ids
 
     def __str__(self):
         return "%s\t%s\t0x%x\t0x%x" % (self.name,
@@ -71,18 +72,22 @@ def list_object_classes(r2, log_fn = do_log):
             class_name = create_func[26:-2]
         else:
             class_name = create_func[7:]
-        img_id = find_first_image(r2 = r2, func = create_func,
-                                  func_len = func_len, log_fn = log_fn)
+        all_img_ids = find_all_images(r2 = r2, func = create_func,
+                                      func_len = func_len, log_fn = log_fn)
+        img_id = None
+        if len(all_img_ids) > 0:
+            img_id = all_img_ids[0]
         obj_class = FpObjClass(name = class_name,
                                func = create_func,
                                vaddr = int(vaddr, 16),
                                paddr = int(paddr, 16),
                                func_len = func_len,
-                               img_id = img_id)
+                               img_id = img_id,
+                               all_img_ids = all_img_ids)
         obj_classes[class_name] = obj_class
     return obj_classes
 
-def find_first_image(r2, func, func_len, log_fn = do_log):
+def find_all_images(r2, func, func_len, log_fn = do_log):
     """
     seeks to the create function and returns the image id sent to
     the first get_internal_image call.  This will return None if
@@ -92,6 +97,7 @@ def find_first_image(r2, func, func_len, log_fn = do_log):
     r2.cmd("s sym.%s" % func)
 
     end_address = int(r2.cmd("s"), 16) + func_len
+    all_img_ids = []
     img_id = None
 
     # go forward and find the last mov into %edi before the first
@@ -109,9 +115,10 @@ def find_first_image(r2, func, func_len, log_fn = do_log):
                 log_fn("WARNING: Unable to find get_internal_image " + \
                        "parameter in %s" % func)
             else:
-                return int(img_id, 16)
+                all_img_ids.append(int(img_id, 16))
+                img_id = None
         r2.cmd("so 1")
-    return None
+    return all_img_ids
 
 def parse_frame(r2, frame_no, obj_classes, log_fn = do_log):
     """
@@ -159,7 +166,6 @@ def parse_frame(r2, frame_no, obj_classes, log_fn = do_log):
                         "pos_y" : last_y_val,
                         "addr_pos_x" : last_x_val_addr,
                         "addr_pos_y" : last_y_val_addr,
-                        "images" : [],
                         "error" : 0}
             if (last_x_val is None or last_y_val is None):
                   new_obj['error'] = 1
@@ -183,9 +189,8 @@ def parse_frame(r2, frame_no, obj_classes, log_fn = do_log):
         r2.cmd("so 1")
 
     for idx, obj in enumerate(objs):
-        img_id = obj_classes[obj['obj_class']].img_id
-        if img_id is not None:
-            objs[idx]['image'] = img_id;
+        all_img_ids = obj_classes[obj['obj_class']].all_img_ids
+        objs[idx]['all_images'] = all_img_ids
 
     # Unlike with objects, having an error in a frame doesn't mean we ignore
     # the entire frame, it just means that we shouldn't edit the frame

@@ -16,11 +16,14 @@ class FpObj:
 
         self.image = None
         self.image_handle = None
-        if "image" in obj_dict:
+        self.all_images = obj_dict["all_images"]
+
+        if len(self.all_images) >= 1:
+            img_id = self.all_images[0]
             img_path = os.path.join(proj_path, "assets", "images",
-                                    "img_%d.png" % obj_dict["image"])
+                                    "img_%d.png" % img_id)
             self.image = cairo.ImageSurface.create_from_png(img_path)
-            self.image_handle = obj_dict["image"]
+            self.image_handle = img_id
         self.obj_class = obj_dict["obj_class"]
         self.error = obj_dict["error"]
 
@@ -82,8 +85,7 @@ class FpFrame:
                 "obj_class" : obj.obj_class,
                 "error" : obj.error
                 }
-            if obj.image_handle is not None:
-                obj_dict["image"] = obj.image_handle
+            obj_dict["all_images"] = obj.all_images
             obj_dict_list.append(obj_dict)
         dat["objects"] = obj_dict_list
         return json.dumps(obj = dat, indent = 4)
