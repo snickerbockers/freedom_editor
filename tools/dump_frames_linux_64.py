@@ -211,7 +211,7 @@ def do_dump_levels(engine_path, out_dir, n_jobs = 1, start_idx = 1,
     # to want to move the call to list_object_classes up another level into the
     # callee so that they can all share the same obj_classes list instead of
     # having every thread call list_object_classes
-    obj_classes = list_object_classes(r2, log_fn = do_log)
+    obj_classes = list_object_classes(r2, log_fn = log_fn)
 
     for frame_no in range(start_idx, 88, n_jobs):
         lvl_path = os.path.join(out_dir, "%d.lvl" % frame_no)
