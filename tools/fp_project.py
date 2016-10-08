@@ -91,14 +91,12 @@ def create_project(project_name, project_path, game_path, n_jobs = 1,
 
     # next dump the level data
     log_fn("Dumping level data...")
+    bkup_lvl_dir = os.path.join(bkup_dir, "levels")
+    os.mkdir(bkup_lvl_dir)
     active_threads += dump_frames_linux_64.dump_all_levels(path_to_inst_chowdren, raw_level_dir,
+                                                           bkup_dir = bkup_lvl_dir,
                                                            n_jobs = n_jobs, log_fn = log_fn,
                                                            join_threads = join_threads)
-
-    bkup_lvl_dir = os.path.join(bkup_dir, "levels")
-    shutil.copytree(src = raw_level_dir, dst = bkup_lvl_dir)
-    for filename in os.listdir(bkup_lvl_dir):
-        os.chmod(os.path.join(bkup_lvl_dir, filename), 0444)
 
     if join_threads:
         assets_thread.join()

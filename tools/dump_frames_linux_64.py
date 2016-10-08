@@ -203,8 +203,8 @@ def parse_frame(r2, frame_no, obj_classes, log_fn = do_log):
             "objects" : objs,
             "error" : frame_error}
 
-def do_dump_levels(engine_path, out_dir, n_jobs = 1, start_idx = 1,
-                   log_fn = do_log):
+def do_dump_levels(engine_path, out_dir, bkup_dir = None, n_jobs = 1,
+                   start_idx = 1, log_fn = do_log):
     r2 = r2pipe.open(engine_path)
 
     # TODO: IF I ever get the multi-threading *really* working, then I'm going
@@ -214,16 +214,29 @@ def do_dump_levels(engine_path, out_dir, n_jobs = 1, start_idx = 1,
     obj_classes = list_object_classes(r2, log_fn = log_fn)
 
     for frame_no in range(start_idx, 88, n_jobs):
-        lvl_path = os.path.join(out_dir, "%d.lvl" % frame_no)
+        lvl_filename = "%d.lvl" % frame_no
+        lvl_path = os.path.join(out_dir, lvl_filename)
+
+        lvl_bkup_path = None
+        if bkup_dir is not None:
+            lvl_bkup_path = os.path.join(bkup_dir, lvl_filename)
+
         log_fn("dumping frame %d to %s..." % (frame_no, lvl_path))
 
         frame = parse_frame(r2, frame_no, obj_classes = obj_classes,
                             log_fn = log_fn)
-        json.dump(obj=frame, fp = open(lvl_path, "w"), indent=4)
+
+        json_data = json.dumps(obj=frame, indent=4)
+        open(lvl_path, "w").write(json_data)
+
+        if lvl_bkup_path is not None:
+            log_fn("backing up frame %d to %s..." % (frame_no, lvl_bkup_path))
+            open(lvl_bkup_path, "w").write(json_data)
+            os.chmod(lvl_bkup_path, 0444)
     r2.quit()
 
-def dump_all_levels(engine_path, out_dir, n_jobs = 1, log_fn = do_log,
-                    join_threads = True):
+def dump_all_levels(engine_path, out_dir, bkup_dir = None, n_jobs = 1,
+                    log_fn = do_log, join_threads = True):
     """
     launch a bunch of threads that all call do_dump_levels.
     If join_threads is False, this function will not wait until the levels have
@@ -236,7 +249,8 @@ def dump_all_levels(engine_path, out_dir, n_jobs = 1, log_fn = do_log,
     thread_list = []
     for i in range(n_jobs):
         t = threading.Thread(target = do_dump_levels,
-                             args = (engine_path, out_dir, n_jobs, i + 1, log_fn))
+                             args = (engine_path, out_dir, bkup_dir,
+                                     n_jobs, i + 1, log_fn))
         t.start()
         thread_list.append(t)
 
