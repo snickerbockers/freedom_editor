@@ -106,8 +106,8 @@ def find_first_image(r2, func, func_len, log_fn = do_log):
             img_id = re_match.group(1)
         elif inst == "call sym.get_internal_image":
             if img_id is None:
-                log_fn("ERROR: Unable to find get_internal_image parameter " + \
-                       "in %s" % func)
+                log_fn("WARNING: Unable to find get_internal_image " + \
+                       "parameter in %s" % func)
             else:
                 return int(img_id, 16)
         r2.cmd("so 1")
