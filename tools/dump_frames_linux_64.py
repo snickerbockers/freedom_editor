@@ -37,14 +37,13 @@ def do_log(msg):
     print msg
 
 class FpObjClass:
-    def __init__(self, name, func, func_len, vaddr, paddr, img_id, all_img_ids):
+    def __init__(self, name, func, func_len, vaddr, paddr, all_img_ids):
         self.name = name
         self.func = func
         self.func_len = func_len
         self.vaddr = vaddr
         self.paddr = paddr
 
-        self.img_id = img_id
         self.all_img_ids = all_img_ids
 
     def __str__(self):
@@ -74,15 +73,11 @@ def list_object_classes(r2, log_fn = do_log):
             class_name = create_func[7:]
         all_img_ids = find_all_images(r2 = r2, func = create_func,
                                       func_len = func_len, log_fn = log_fn)
-        img_id = None
-        if len(all_img_ids) > 0:
-            img_id = all_img_ids[0]
         obj_class = FpObjClass(name = class_name,
                                func = create_func,
                                vaddr = int(vaddr, 16),
                                paddr = int(paddr, 16),
                                func_len = func_len,
-                               img_id = img_id,
                                all_img_ids = all_img_ids)
         obj_classes[class_name] = obj_class
     return obj_classes
